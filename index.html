@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MY ENGLISH BRAND</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=DM+Sans:wght@700&family=Fredoka:wght@600&family=Lilita+One&family=Caveat:wght@700&family=Kalam:wght@700&family=Playfair+Display:wght@700&family=Bangers&family=Pacifico&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#fff4e2;--paper:#fffdf8;--ink:#5a4636;--soft:#8a7461;--coral:#ff8a5c;--sun:#ffcf5c;--mint:#8fd3b6;--line:#f1dfc6;--line-d:#e3c9a6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','M PLUS Rounded 1c','BIZ UDPGothic',Meiryo,sans-serif;color:var(--ink);min-height:100vh;
+ background:radial-gradient(circle at 10% 6%,#ffe5bd 0,transparent 36%),radial-gradient(circle at 92% 94%,#ffd6cc 0,transparent 34%),var(--cream);
+ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,canvas:focus-visible{outline:4px solid #ffb703;outline-offset:3px}
+.hidden{display:none!important}
+.app{max-width:1500px;margin:auto;padding:12px clamp(10px,2vw,26px) 24px}
+
+/* ---- header ---- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:50px;height:50px;border-radius:55% 45% 52% 48%;background:var(--sun);display:grid;place-items:center;font-family:'Caveat','Fredoka',cursive;font-size:38px;font-weight:700;color:#7a4a1c;transform:rotate(-6deg);box-shadow:0 4px 0 #f0b53a}
+.brand h1{margin:0;font-family:'Fredoka','Zen Maru Gothic',sans-serif;font-size:24px;letter-spacing:.04em;line-height:1.1}
+.brand p{margin:2px 0 0;font-size:13px;color:var(--soft);font-weight:700}
+.menu{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ---- buttons ---- */
+.btn{min-height:48px;border:2px solid var(--line-d);border-radius:18px;background:#fff;padding:8px 16px;font-weight:700;font-size:15px;box-shadow:0 4px 0 var(--line-d);transition:transform .12s,box-shadow .12s,background .15s;line-height:1.25}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line-d)}
+.btn.active{background:var(--sun);border-color:#f0b53a;box-shadow:0 4px 0 #f0b53a}
+.btn.primary{background:var(--coral);border-color:#e8683a;box-shadow:0 4px 0 #e8683a;color:#3b1d0e}
+.btn.go{background:var(--mint);border-color:#5fb895;box-shadow:0 4px 0 #5fb895;color:#16422f}
+.btn.danger{background:#fff0ea;border-color:#f0b8a5;box-shadow:0 4px 0 #f0b8a5;color:#9a3a1d}
+.btn.big{min-height:58px;font-size:17px;padding:10px 22px}
+.btn.small{min-height:42px;padding:6px 10px;font-size:14px;border-radius:14px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn.wide{width:100%}
+
+/* ---- layout ---- */
+.workspace{margin-top:14px;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,390px);gap:16px;align-items:start}
+.stage{background:rgba(255,253,248,.82);border-radius:28px;padding:18px 22px 20px;min-width:0;border:2px solid var(--line);box-shadow:0 10px 30px #a77d4a1f}
+.stage-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.stage-top h2{margin:0;font-size:21px;font-weight:900}
+.stage-actions{display:flex;gap:8px;flex-wrap:wrap}
+.badge{background:#fff;border:2px dashed var(--line-d);border-radius:999px;padding:6px 16px;font-weight:900;font-size:16px}
+.badge b{font-family:'Fredoka',sans-serif;font-size:24px;color:#e8683a;margin-left:4px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;padding:0;list-style:none}
+.steps li{background:#fff4d6;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700}
+.steps li span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--coral);color:#3b1d0e;font-size:13px;margin-right:6px}
+.board-frame{max-width:940px;margin:auto;padding:10px;background:#fff;border-radius:22px;border:3px solid #ffe2b3}
+#writingBoard{display:block;width:100%;height:auto;aspect-ratio:900/320;border-radius:14px;touch-action:none;cursor:crosshair}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.canvas-frame{width:fit-content;max-width:100%;margin:auto;padding:12px;background:#fff;border-radius:22px;box-shadow:0 14px 40px #a77d4a33;border:3px solid #ffe2b3}
+#artboard{display:block;height:auto;border-radius:10px;touch-action:none;cursor:grab}
+#artboard:active{cursor:grabbing}
+.stage-tip{text-align:center;color:var(--soft);font-size:14px;font-weight:700;margin:14px 0 0}
+
+/* ---- side panel ---- */
+.panel{background:var(--paper);border-radius:28px;padding:18px;border:2px solid var(--line);box-shadow:0 10px 30px #a77d4a1f;max-height:calc(100vh - 100px);overflow:auto}
+.panel h2{margin:0 0 8px;font-size:18px;font-weight:900}
+.panel h3{margin:0 0 8px;font-size:15px;font-weight:900}
+.panel-section{border-top:2px dotted var(--line-d);padding-top:12px;margin-top:14px}
+.note{font-size:13px;color:var(--soft);line-height:1.6;margin:4px 0 8px;font-weight:500}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>.btn{flex:1}
+input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
+.field{display:grid;gap:2px;margin:8px 0;font-weight:700;font-size:14px}
+.letters{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.letter{height:44px;border:2px solid var(--line-d);border-radius:12px;background:#fff;font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600;padding:0}
+.letter.chosen{background:var(--sun);border-color:#f0b53a;box-shadow:0 3px 0 #f0b53a}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.swatch{width:42px;height:42px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line-d);padding:0}
+.swatch.chosen{box-shadow:0 0 0 4px #ff8a5c}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.chip{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid var(--line-d);border-radius:14px;background:#fff;padding:4px 6px 2px}
+.chip.selected{border-color:#ff8a5c;background:#fff0e4;box-shadow:0 0 0 3px #ffd0b8}
+.chip canvas{display:block}
+.chip span{font-family:'Fredoka',sans-serif;font-weight:600;font-size:15px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.tiles{display:flex;flex-wrap:wrap;gap:8px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:84px;border:2px solid var(--line-d);border-radius:14px;background:#fff;padding:6px;font-size:13px;font-weight:700}
+.tile.selected{border-color:#ff8a5c;box-shadow:0 0 0 3px #ffd0b8}
+.tile canvas{display:block;border-radius:8px}
+.font-choice{width:100%;min-height:54px;text-align:left;border:2px solid var(--line-d);background:#fff;border-radius:14px;padding:4px 14px;margin:5px 0;font-size:26px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.font-choice small{font-family:'Zen Maru Gothic',sans-serif;font-size:12px;color:var(--soft);font-weight:700}
+.font-choice.selected{border-color:#ff8a5c;box-shadow:0 0 0 3px #ffd0b8}
+.seg{display:flex;gap:6px}
+.seg .btn{flex:1}
+
+/* ---- dialogs ---- */
+.overlay{position:fixed;inset:0;background:#4a2f1bb0;display:grid;place-items:center;padding:20px;z-index:30}
+.dialog{width:min(100%,430px);background:var(--paper);border-radius:28px;padding:26px;box-shadow:0 20px 60px #0005;border:3px solid #ffe2b3}
+.dialog.wide{width:min(100%,700px)}
+.dialog h2{margin:0 0 10px;font-size:22px;font-weight:900}
+.dialog p{line-height:1.7;margin:0 0 14px;font-weight:500}
+.warn{background:#fff0ea;border-radius:14px;padding:10px 14px;color:#9a3a1d;font-weight:700!important}
+.kind-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0 16px}
+.kind-card{display:flex;flex-direction:column;align-items:center;gap:6px;border:3px solid var(--line-d);background:#fff;border-radius:22px;padding:20px 12px;box-shadow:0 5px 0 var(--line-d);transition:transform .12s}
+.kind-card:hover{transform:translateY(-3px)}
+.kind-card .ico{font-size:44px;line-height:1}
+.kind-card b{font-family:'Fredoka',sans-serif;font-size:19px;letter-spacing:.03em}
+.kind-card small{color:var(--soft);font-weight:700;font-size:13px;line-height:1.5;text-align:center}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#5a4636;color:#fff;padding:12px 22px;border-radius:999px;font-weight:700;font-size:15px;opacity:0;pointer-events:none;transition:all .25s;z-index:40;max-width:92vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:1050px){.workspace{grid-template-columns:1fr}.panel{max-height:none}.stage{padding:14px}}
+@media(max-width:620px){.menu .btn{flex:1;font-size:13px;padding:6px}.kind-cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="topbar">
+  <div class="brand">
+   <div class="brand-mark" aria-hidden="true">m</div>
+   <div><h1>MY ENGLISH BRAND</h1><p>書いた文字で、わたしだけのデザイン。</p></div>
+  </div>
+  <nav class="menu" aria-label="メインメニュー">
+   <button id="newBtn" class="btn" type="button">＋ 新しい作品</button>
+   <button id="writeTab" class="btn active" type="button">✏️ 文字を書く</button>
+   <button id="designTab" class="btn" type="button">🎨 デザインする</button>
+   <button id="saveBtn" class="btn primary" type="button">⬇️ 作品を保存</button>
+   <button id="resetBtn" class="btn" type="button">↺ 最初から</button>
+  </nav>
+ </header>
+
+ <main class="workspace">
+  <section class="stage" aria-label="作業エリア">
+   <!-- 書く画面 -->
+   <div id="writeStage">
+    <div class="stage-top">
+     <h2>✏️ 4線に文字を書こう</h2>
+     <div class="badge" id="curLetterBadge">いま書く文字<b>a</b></div>
+    </div>
+    <ol class="steps">
+     <li id="step1"><span>1</span>右で文字をえらぶ</li>
+     <li id="step2"><span>2</span>4線に指で書く</li>
+     <li><span>3</span>「この文字を足す」</li>
+     <li><span>4</span>書けたら「作品に入れる」</li>
+    </ol>
+    <div class="board-frame"><canvas id="writingBoard" width="1800" height="640" tabindex="0" aria-label="4線の手書きエリア"></canvas></div>
+    <div class="actions">
+     <button id="undoStroke" type="button" class="btn">↶ 1画もどす</button>
+     <button id="clearStrokes" type="button" class="btn">🧽 消して書き直す</button>
+     <button id="cancelEdit" type="button" class="btn hidden">書き直しをやめる</button>
+     <button id="addLetter" type="button" class="btn big primary">＋ この文字を足す</button>
+     <button id="finishWord" type="button" class="btn big go">✓ 作品に入れる</button>
+    </div>
+   </div>
+
+   <!-- デザイン画面 -->
+   <div id="designStage" class="hidden">
+    <div class="stage-top">
+     <h2 id="workTitle">MY NAME CARD</h2>
+     <div class="stage-actions">
+      <button id="guidesBtn" class="btn" type="button">📏 4線を表示</button>
+      <button id="bringBackBtn" class="btn" type="button">⌖ キャンバス内に戻す</button>
+     </div>
+    </div>
+    <div class="canvas-frame" id="canvasFrame"><canvas id="artboard" width="1800" height="1040" tabindex="0" aria-label="作品キャンバス。文字や図形をタップして選び、ドラッグして動かせます"></canvas></div>
+    <p class="stage-tip">文字や図形をタップして動かそう。右下の丸で大きさ、上の丸で向きが変えられるよ。</p>
+   </div>
+  </section>
+
+  <aside class="panel" aria-label="編集パネル">
+   <!-- 書くときのパネル -->
+   <section id="writePanel">
+    <h2 id="letterHeading">① 書く文字をえらぼう</h2>
+    <div id="letterChoices" class="letters"></div>
+    <p id="letterNote" class="note">書いた文字と同じ文字をえらんでね。（フォントに変えるときに使うよ）</p>
+    <div class="panel-section">
+     <h3>ペンの太さ</h3>
+     <input id="penWidth" type="range" min="3" max="22" value="8" aria-label="ペンの太さ">
+    </div>
+    <div class="panel-section">
+     <h3>ペンの色</h3>
+     <div id="penColors" class="swatches"></div>
+    </div>
+    <div class="panel-section">
+     <h3>書いた文字</h3>
+     <p id="writeModeNote" class="note"></p>
+     <div id="stripWrite"></div>
+    </div>
+   </section>
+
+   <!-- デザインのパネル -->
+   <section id="designPanel" class="hidden">
+    <div class="tabs">
+     <button id="tab-edit" class="btn" type="button">✏️ えらんだもの</button>
+     <button id="tab-tpl" class="btn" type="button">🎨 テンプレート</button>
+     <button id="tab-bg" class="btn" type="button">🖼️ 背景</button>
+     <button id="tab-deco" class="btn" type="button">⭐ かざり</button>
+    </div>
+
+    <div id="sec-tpl">
+     <h2>デザインのスタート</h2>
+     <p class="note">えらぶと背景やかざりが入るよ。そのあとで自由に変えられるよ。</p>
+     <div id="templates" class="tiles"></div>
+    </div>
+
+    <div id="sec-bg" class="hidden">
+     <h2>背景をえらぼう</h2>
+     <div id="backgrounds" class="tiles"></div>
+     <div class="panel-section">
+      <h3>背景の色</h3>
+      <div id="bgColors" class="swatches"></div>
+     </div>
+    </div>
+
+    <div id="sec-deco" class="hidden">
+     <h2>かたち</h2>
+     <div id="shapes" class="tiles"></div>
+     <div class="panel-section">
+      <h2>アイコン</h2>
+      <div id="icons" class="tiles"></div>
+     </div>
+    </div>
+
+    <div id="sec-edit" class="hidden">
+     <p id="editEmpty" class="note">作品の中の文字や図形をタップすると、ここで直せるよ。</p>
+     <div id="editBody" class="hidden">
+      <div id="wordBox">
+       <h2>文字のならび</h2>
+       <div id="stripDesign"></div>
+       <button id="addMore" type="button" class="btn wide small">＋ この文字列に文字を足す</button>
+       <div class="panel-section">
+        <h3>どれを変える？</h3>
+        <div class="seg">
+         <button id="scopeAll" type="button" class="btn small">ぜんぶ</button>
+         <button id="scopeOne" type="button" class="btn small">えらんだ1文字</button>
+        </div>
+       </div>
+       <div class="panel-section">
+        <h3>文字の見え方</h3>
+        <div class="seg">
+         <button id="handMode" type="button" class="btn small">✎ 手書き</button>
+         <button id="fontMode" type="button" class="btn small">A フォント</button>
+        </div>
+        <div id="fontBox" class="hidden" style="margin-top:10px">
+         <h3>文字の形をえらぼう</h3>
+         <div id="fontChoices"></div>
+        </div>
+       </div>
+      </div>
+
+      <div class="panel-section">
+       <h3>色</h3>
+       <div id="objColors" class="swatches"></div>
+       <div id="paletteBox" style="margin-top:10px">
+        <h3>いろいろな色でカラフルに</h3>
+        <div id="palettes" class="row"></div>
+       </div>
+      </div>
+
+      <div class="panel-section">
+       <div class="field"><label for="sizeSlider">大きさ</label><input id="sizeSlider" type="range" min="15" max="400" value="100"></div>
+       <div class="field"><label for="rotateSlider">かたむき</label><input id="rotateSlider" type="range" min="-180" max="180" value="0"></div>
+       <div class="field"><label for="opacitySlider">こさ</label><input id="opacitySlider" type="range" min="15" max="100" value="100"></div>
+      </div>
+      <div class="row">
+       <button id="duplicateBtn" class="btn" type="button">＋ ふやす</button>
+       <button id="deleteBtn" class="btn danger" type="button">× けす</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+       <button id="backwardBtn" class="btn" type="button">← うしろへ</button>
+       <button id="forwardBtn" class="btn" type="button">まえへ →</button>
+      </div>
+     </div>
+    </div>
+   </section>
+  </aside>
+ </main>
+</div>
+
+<!-- 作品の種類をえらぶ -->
+<div id="kindDialog" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="kindTitle">
+ <div class="dialog wide">
+  <h2 id="kindTitle">なにを作ろう？</h2>
+  <p id="kindWarn" class="warn hidden">⚠️ いまの作品は消えるよ。のこしたいときは、先に「作品を保存」してね。</p>
+  <div class="kind-cards">
+   <button type="button" class="kind-card" data-kind="card"><span class="ico">🪪</span><b>MY NAME CARD</b><small>自分の名前で<br>英語の名刺をつくろう</small></button>
+   <button type="button" class="kind-card" data-kind="logo"><span class="ico">🔤</span><b>MY ALPHABET LOGO</b><small>すきな文字で<br>オリジナルロゴをつくろう</small></button>
+  </div>
+  <div class="row"><button id="kindClose" type="button" class="btn">もどる</button></div>
+ </div>
+</div>
+
+<!-- 確認 -->
+<div id="confirmDialog" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="confirmHead">
+ <div class="dialog">
+  <h2 id="confirmHead">最初からやり直す？</h2>
+  <p id="confirmText">いまの作品は消えます。のこしたいときは、先に画像を保存してね。</p>
+  <div class="row">
+   <button id="confirmNo" type="button" class="btn">作品にもどる</button>
+   <button id="confirmYes" type="button" class="btn danger">消して始める</button>
+  </div>
+ </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* =========================================================
+   定数
+   ========================================================= */
+const SS = 2;                 // 画面用の解像度倍率
+const EXPORT = 3;             // 保存画像の解像度倍率
+const BW = 900, BH = 320;     // 手書きボードのサイズ（内部単位）
+const LINES = [50, 126, 202, 278];   // 4線のy位置（3本目が基準線）
+const GAP = LINES[1] - LINES[0];     // 1段の高さ（小文字の高さ）
+const CY = (LINES[0] + LINES[3]) / 2;
+const HALF_H = (LINES[3] - LINES[0]) / 2 + 26;
+const SIZES = { card: [900, 520], logo: [640, 640] };
+const TITLES = { card: 'MY NAME CARD', logo: 'MY ALPHABET LOGO' };
+const KEY = 'myEnglishBrand_v2';
+
+const COLORS = ['#4a3b32','#ff6b4a','#ffb703','#ffd966','#7bc8a4','#2a9d8f','#4d8fd6','#8e7dd6','#f06292','#ffffff','#111111'];
+const BG_COLORS = ['#ffe3b3','#ffc9b9','#ffd6e7','#e3d7ff','#cfe8f7','#cdeedc','#fff1a8','#d9d4cc','#ff9f7a','#6ec3e8'];
+const PALETTES = [
+  ['🌈 にじ色', ['#ff6b4a','#ffb703','#7bc8a4','#4d8fd6','#8e7dd6','#f06292']],
+  ['🍊 あったか', ['#ff6b4a','#ffb703','#f06292','#ff9f68']],
+  ['🧊 ひんやり', ['#4d8fd6','#2a9d8f','#8e7dd6','#6ec3e8']]
+];
+const FONTS = [
+  { label:'すっきり', family:'DM Sans', weight:700, xh:.5 },
+  { label:'まるい', family:'Fredoka', weight:600, xh:.5 },
+  { label:'ふとい', family:'Lilita One', weight:400, xh:.5 },
+  { label:'てがき風', family:'Caveat', weight:700, xh:.36 },
+  { label:'えんぴつ風', family:'Kalam', weight:700, xh:.38 },
+  { label:'おしゃれ', family:'Playfair Display', weight:700, xh:.5 },
+  { label:'ポップ', family:'Bangers', weight:400, xh:.52 },
+  { label:'ふでがき風', family:'Pacifico', weight:400, xh:.46 },
+  { label:'カクカク', family:'Space Mono', weight:700, xh:.5 }
+];
+const BACKGROUNDS = [['白','white'],['黒','black'],['単色','solid'],['グラデーション','gradient'],['もよう','pattern'],['ドット','dots'],['ストライプ','stripes'],['幾何学','geometry']];
+const SHAPES = [['star','ほし'],['heart','ハート'],['circle','まる'],['square','しかく'],['triangle','さんかく'],['bolt','いなずま'],['arrow','やじるし'],['wave','なみせん'],['flower','はな'],['diamond','ひしがた'],['hexagon','ろっかく'],['rings','ぐるぐる']];
+const ICONS = [['sport','スポーツ'],['animal','どうぶつ'],['music','おんがく'],['space','うちゅう'],['nature','しぜん'],['vehicle','のりもの'],['fashion','ファッション']];
+const DEFAULT_SHAPE_COLOR = { heart:'#f06292', star:'#ffb703', circle:'#4d8fd6', square:'#7bc8a4', triangle:'#ff6b4a', bolt:'#ffb703', arrow:'#4a3b32', wave:'#4d8fd6', flower:'#f06292', diamond:'#8e7dd6', hexagon:'#2a9d8f', rings:'#ff6b4a', sport:'#ff9f68', animal:'#8a5a3c', music:'#4a3b32', space:'#8e7dd6', nature:'#4f9d69', vehicle:'#ff6b4a', fashion:'#4d8fd6' };
+const TEMPLATES = [
+  { name:'シンプル', bg:'white', bgColor:'#ffe3b3', text:'#4a3b32', font:'DM Sans', deco:[] },
+  { name:'カラフル', bg:'gradient', bgColor:'#ffd27a', text:['#ff6b4a','#ffb703','#2a9d8f','#4d8fd6','#8e7dd6','#f06292'], font:'Fredoka',
+    deco:[['star',.1,.2,.7,-15,'#ff6b4a'],['circle',.9,.82,.5,0,'#7bc8a4'],['heart',.9,.18,.45,12,'#f06292'],['triangle',.12,.84,.45,-10,'#4d8fd6']] },
+  { name:'スポーティー', bg:'stripes', bgColor:'#9fd8c8', text:'#16423c', font:'Lilita One',
+    deco:[['sport',.1,.2,.8,0,'#ff9f68'],['bolt',.9,.82,.6,15,'#ffb703'],['arrow',.88,.2,.6,-20,'#16423c']] },
+  { name:'ポップ', bg:'dots', bgColor:'#ffb3c7', text:'#e0245e', font:'Bangers',
+    deco:[['heart',.1,.2,.7,-15,'#f06292'],['star',.9,.8,.6,15,'#ffb703'],['circle',.88,.2,.3,0,'#4d8fd6']] },
+  { name:'クール', bg:'solid', bgColor:'#cfe8f7', text:'#1f4e79', font:'DM Sans',
+    deco:[['diamond',.1,.2,.6,0,'#4d8fd6'],['wave',.82,.86,1,0,'#4d8fd6'],['hexagon',.9,.2,.45,10,'#2a9d8f']] },
+  { name:'ナチュラル', bg:'pattern', bgColor:'#cdeedc', text:'#2f6b4f', font:'Kalam',
+    deco:[['nature',.1,.2,.8,-20,'#4f9d69'],['flower',.9,.82,.7,0,'#f2a65a'],['nature',.9,.2,.5,25,'#7bc8a4']] },
+  { name:'宇宙', bg:'black', bgColor:'#ffe3b3', text:'#ffe27a', font:'Fredoka',
+    deco:[['space',.12,.22,.8,0,'#8e7dd6'],['star',.88,.2,.4,12,'#ffe27a'],['star',.82,.82,.3,0,'#ffe27a'],['star',.2,.84,.25,20,'#ffffff']] },
+  { name:'ネオン', bg:'black', bgColor:'#ffe3b3', text:'#5ef2d6', font:'Pacifico',
+    deco:[['bolt',.1,.2,.7,-15,'#ffe94d'],['star',.9,.82,.6,15,'#ff4fd8'],['wave',.5,.93,1.2,0,'#ff4fd8']] }
+];
+
+/* =========================================================
+   状態
+   ========================================================= */
+let S = { kind:'card', bgType:'white', bgColor:'#ffe3b3', guides:false, items:[], nextId:1, draft:[] };
+let W = 900, H = 520;
+let view = 'write';
+let selected = null;
+let strokes = [], activeStroke = null, activePointer = null;
+let letter = 'a', penColor = COLORS[0], penWidth = 8;
+let writeTarget = null, editIdx = null;
+let gSel = -1, scope = 'all';
+let dtab = 'tpl';
+let gesture = null;
+let confirmAction = null;
+
+const art = $('artboard'), ctx = art.getContext('2d');
+const board = $('writingBoard');
+let wc;
+try { wc = board.getContext('2d', { desynchronized:true }); } catch (e) { wc = board.getContext('2d'); }
+const mctx = document.createElement('canvas').getContext('2d');
+
+/* =========================================================
+   ユーティリティ
+   ========================================================= */
+function uid(){ return S.nextId++; }
+function sel(){ return S.items.find(x => x.id === selected) || null; }
+function cloneJSON(o){ return JSON.parse(JSON.stringify(o)); }
+function hexToRgb(h){ h = h.replace('#',''); if(h.length === 3) h = h.split('').map(x => x + x).join(''); return [0,2,4].map(i => parseInt(h.substr(i,2),16)); }
+function mix(a,b,t){ const pa = hexToRgb(a), pb = hexToRgb(b); return '#' + pa.map((v,i) => Math.round(v + (pb[i]-v)*t).toString(16).padStart(2,'0')).join(''); }
+function pt(e,c,uw,uh){ const r = c.getBoundingClientRect(); return { x:(e.clientX-r.left)*uw/r.width, y:(e.clientY-r.top)*uh/r.height }; }
+let toastT = null;
+function toast(text){ const t = $('toast'); t.textContent = text; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3200); }
+
+/* =========================================================
+   自動保存
+   ========================================================= */
+let saveT = null;
+function persist(){ clearTimeout(saveT); saveT = setTimeout(saveNow, 250); }
+function saveNow(){ try { localStorage.setItem(KEY, JSON.stringify({ v:2, S, letter, penColor, penWidth })); } catch (e) {} }
+function loadSaved(){
+  try {
+    const j = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if(!j || !j.S || !Array.isArray(j.S.items)) return false;
+    S = Object.assign(S, j.S);
+    if(!Array.isArray(S.draft)) S.draft = [];
+    if(j.letter) letter = j.letter;
+    if(j.penColor) penColor = j.penColor;
+    if(j.penWidth) penWidth = j.penWidth;
+    return S.items.length > 0 || S.draft.length > 0;
+  } catch (e) { return false; }
+}
+window.addEventListener('pagehide', saveNow);
+
+/* =========================================================
+   フォント
+   ========================================================= */
+function fontOf(g){ return FONTS.find(f => f.family === g.font) || FONTS[0]; }
+function fontSpec(g){ const f = fontOf(g); return `${f.weight} ${Math.round(GAP / f.xh)}px "${f.family}", sans-serif`; }
+function glyphColor(g){ return g.color || (g.strokes[0] && g.strokes[0].color) || '#4a3b32'; }
+function glyphWidth(g){
+  if(g.display === 'font'){ mctx.font = fontSpec(g); return mctx.measureText(g.ch).width + 14; }
+  return g.w;
+}
+function loadFonts(){
+  const ps = FONTS.map(f => document.fonts.load(`${f.weight} 80px "${f.family}"`, 'abcdefghijklmnopqrstuvwxyz').catch(() => null));
+  Promise.all(ps).then(() => { draw(); refresh(); });
+}
+if(document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { draw(); refresh(); });
+
+/* =========================================================
+   手書き文字（グリフ）の描画
+   ========================================================= */
+function strokePath(c,s,color,width){
+  const p = s.points; if(!p.length) return;
+  c.beginPath(); c.moveTo(p[0][0],p[0][1]);
+  for(let i = 1; i < p.length; i++) c.lineTo(p[i][0],p[i][1]);
+  if(p.length === 1) c.lineTo(p[0][0] + .01, p[0][1] + .01);
+  c.strokeStyle = color; c.lineWidth = width; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke();
+}
+function fourLines(c,x0,x1,alpha){
+  c.save(); c.globalAlpha = alpha == null ? 1 : alpha;
+  LINES.forEach((y,i) => {
+    c.beginPath(); c.setLineDash(i === 1 ? [10,8] : []);
+    c.strokeStyle = i === 2 ? '#f2967a' : '#9ccbe6';
+    c.lineWidth = i === 2 ? 3 : 2.2;
+    c.moveTo(x0,y); c.lineTo(x1,y); c.stroke();
+  });
+  c.restore();
+}
+function drawGlyph(c,g){
+  if(g.display === 'font'){
+    c.fillStyle = glyphColor(g); c.font = fontSpec(g); c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+    c.fillText(g.ch, 7, LINES[2]);
+  } else {
+    g.strokes.forEach(s => strokePath(c, s, g.color || s.color, s.width));
+  }
+}
+function makeGlyph(){
+  if(!strokes.length) return null;
+  let minX = 1e9, maxX = -1e9, maxW = 0;
+  strokes.forEach(s => { maxW = Math.max(maxW, s.width); s.points.forEach(p => { minX = Math.min(minX,p[0]); maxX = Math.max(maxX,p[0]); }); });
+  const pad = 16, span = maxX - minX;
+  const w = Math.max(56, span + maxW + pad * 2);
+  const dx = (w - span) / 2 - minX;
+  const st = strokes.map(s => ({ color:s.color, width:s.width, points:s.points.map(p => [Math.round((p[0]+dx)*10)/10, Math.round(p[1]*10)/10, Math.round(p[2] || 0)]) }));
+  const w0 = curWord();
+  const font = (w0 && w0.glyphs[0] && w0.glyphs[0].font) || FONTS[0].family;
+  return { ch:letter, strokes:st, w:Math.round(w), display:'hand', font, color:null };
+}
+
+/* =========================================================
+   単語（文字列オブジェクト）
+   ========================================================= */
+function layoutWord(it){
+  const pos = []; let x = 0;
+  it.glyphs.forEach(g => { const w = glyphWidth(g); pos.push({ x, w }); x += w; });
+  return { pos, total:x };
+}
+function bounds(it){
+  if(it.type === 'word'){ const L = layoutWord(it); return { hw:(L.total/2 + 24) * it.scale, hh:HALF_H * it.scale }; }
+  return { hw:62 * it.scale, hh:62 * it.scale };
+}
+function newWord(glyphs){
+  const it = { id:uid(), type:'word', x:W/2, y:H/2, scale:1, rotation:0, opacity:1, glyphs };
+  const L = layoutWord(it);
+  it.scale = Math.max(.3, Math.min(L.total ? W * .62 / L.total : 1, H * .8 / (HALF_H * 2), 2.4));
+  return it;
+}
+function drawWord(c,it){
+  c.save();
+  c.translate(it.x,it.y); c.rotate(it.rotation * Math.PI / 180); c.scale(it.scale,it.scale);
+  const L = layoutWord(it), ox = -L.total / 2;
+  if(S.guides){ c.save(); c.translate(0,-CY); fourLines(c, ox - 24, ox + L.total + 24, .95); c.restore(); }
+  c.globalAlpha = it.opacity;
+  L.pos.forEach((p,i) => { c.save(); c.translate(ox + p.x, -CY); drawGlyph(c, it.glyphs[i]); c.restore(); });
+  c.restore();
+}
+
+/* =========================================================
+   図形・アイコン
+   ========================================================= */
+function poly(c,pts){ c.beginPath(); pts.forEach((p,i) => i ? c.lineTo(p[0],p[1]) : c.moveTo(p[0],p[1])); c.closePath(); c.fill(); c.stroke(); }
+function shapeDraw(c,key,color){
+  c.fillStyle = color; c.strokeStyle = color; c.lineWidth = 9; c.lineJoin = 'round'; c.lineCap = 'round';
+  switch(key){
+    case 'circle': c.beginPath(); c.arc(0,0,50,0,Math.PI*2); c.fill(); break;
+    case 'square': poly(c,[[-44,-44],[44,-44],[44,44],[-44,44]]); break;
+    case 'triangle': poly(c,[[0,-48],[50,42],[-50,42]]); break;
+    case 'diamond': poly(c,[[0,-52],[44,0],[0,52],[-44,0]]); break;
+    case 'hexagon': poly(c,[0,1,2,3,4,5].map(i => [Math.cos(i*Math.PI/3)*46, Math.sin(i*Math.PI/3)*46])); break;
+    case 'star': { const pts = []; for(let i = 0; i < 10; i++){ const r = i % 2 ? 24 : 54, a = i*Math.PI/5 - Math.PI/2; pts.push([Math.cos(a)*r, Math.sin(a)*r]); } poly(c,pts); break; }
+    case 'flower': {
+      for(let i = 0; i < 5; i++){ const a = i*Math.PI*2/5 - Math.PI/2; c.beginPath(); c.arc(Math.cos(a)*28, Math.sin(a)*28, 22, 0, Math.PI*2); c.fill(); }
+      c.fillStyle = mix(color,'#ffffff',.7); c.beginPath(); c.arc(0,0,15,0,Math.PI*2); c.fill(); break; }
+    case 'heart': c.beginPath(); c.moveTo(0,46); c.bezierCurveTo(-92,-8,-46,-66,0,-26); c.bezierCurveTo(46,-66,92,-8,0,46); c.fill(); break;
+    case 'bolt': poly(c,[[-6,-56],[-38,4],[-6,4],[-18,56],[40,-14],[8,-14],[28,-56]]); break;
+    case 'arrow': c.lineWidth = 12; c.beginPath(); c.moveTo(-50,0); c.lineTo(46,0); c.moveTo(12,-34); c.lineTo(46,0); c.lineTo(12,34); c.stroke(); break;
+    case 'wave': c.lineWidth = 12; c.beginPath(); for(let x = -54; x <= 54; x += 3){ const y = Math.sin(x/54*Math.PI*2)*18; x === -54 ? c.moveTo(x,y) : c.lineTo(x,y); } c.stroke(); break;
+    case 'rings': c.lineWidth = 9; c.beginPath(); c.arc(0,0,48,0,Math.PI*2); c.stroke(); c.beginPath(); c.arc(0,0,30,0,Math.PI*2); c.stroke(); c.beginPath(); c.arc(0,0,12,0,Math.PI*2); c.fill(); break;
+    case 'sport': {
+      c.beginPath(); c.arc(0,0,50,0,Math.PI*2); c.fill();
+      c.strokeStyle = mix(color,'#000000',.5); c.lineWidth = 4;
+      c.beginPath(); c.moveTo(0,-50); c.lineTo(0,50); c.moveTo(-50,0); c.lineTo(50,0);
+      c.moveTo(-36,-35); c.quadraticCurveTo(-10,0,-36,35); c.moveTo(36,-35); c.quadraticCurveTo(10,0,36,35); c.stroke(); break; }
+    case 'animal':
+      c.beginPath(); c.ellipse(0,20,27,22,0,0,Math.PI*2); c.fill();
+      [[-31,-6,10,14,-.35],[-11,-28,10,14,-.1],[11,-28,10,14,.1],[31,-6,10,14,.35]].forEach(a => { c.beginPath(); c.ellipse(a[0],a[1],a[2],a[3],a[4],0,Math.PI*2); c.fill(); }); break;
+    case 'music':
+      c.beginPath(); c.ellipse(-14,34,17,12,-.4,0,Math.PI*2); c.fill();
+      c.lineWidth = 7; c.beginPath(); c.moveTo(1,30); c.lineTo(1,-46); c.stroke();
+      c.beginPath(); c.moveTo(1,-46); c.bezierCurveTo(10,-30,40,-32,32,-4); c.bezierCurveTo(28,-24,12,-26,1,-26); c.fill(); break;
+    case 'space':
+      c.beginPath(); c.arc(0,0,30,0,Math.PI*2); c.fill();
+      c.strokeStyle = mix(color,'#ffffff',.55); c.lineWidth = 7; c.beginPath(); c.ellipse(0,0,54,15,-.35,0,Math.PI*2); c.stroke(); break;
+    case 'nature':
+      c.beginPath(); c.moveTo(-48,40); c.bezierCurveTo(-52,-30,0,-56,50,-48); c.bezierCurveTo(52,10,10,50,-48,40); c.fill();
+      c.strokeStyle = mix(color,'#ffffff',.6); c.lineWidth = 4; c.beginPath(); c.moveTo(-44,38); c.lineTo(24,-26); c.stroke(); break;
+    case 'vehicle':
+      c.lineWidth = 4; c.beginPath(); c.moveTo(-52,16); c.lineTo(-52,0); c.quadraticCurveTo(-52,-8,-44,-8); c.lineTo(-26,-8); c.lineTo(-14,-30); c.lineTo(22,-30); c.lineTo(36,-8); c.lineTo(46,-8); c.quadraticCurveTo(54,-8,54,0); c.lineTo(54,16); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = mix(color,'#ffffff',.75); poly(c,[[-20,-10],[-11,-26],[6,-26],[6,-10]]); poly(c,[[14,-10],[14,-26],[22,-26],[32,-10]]);
+      c.fillStyle = '#4a3b32'; c.beginPath(); c.arc(-28,17,12,0,Math.PI*2); c.arc(32,17,12,0,Math.PI*2); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(-28,17,4,0,Math.PI*2); c.arc(32,17,4,0,Math.PI*2); c.fill(); break;
+    case 'fashion':
+      c.lineWidth = 6; c.beginPath(); c.moveTo(-22,-44); c.quadraticCurveTo(0,-26,22,-44); c.lineTo(52,-26); c.lineTo(40,-6); c.lineTo(26,-14); c.lineTo(26,44); c.lineTo(-26,44); c.lineTo(-26,-14); c.lineTo(-40,-6); c.lineTo(-52,-26); c.closePath(); c.fill(); c.stroke(); break;
+    default: c.beginPath(); c.arc(0,0,40,0,Math.PI*2); c.fill();
+  }
+}
+function drawItem(c,it){
+  if(it.type === 'word'){ drawWord(c,it); return; }
+  c.save(); c.translate(it.x,it.y); c.rotate(it.rotation*Math.PI/180); c.globalAlpha = it.opacity; c.scale(it.scale,it.scale);
+  shapeDraw(c, it.key, it.color); c.restore();
+}
+
+/* =========================================================
+   背景
+   ========================================================= */
+function paintBackground(c,type,color,w,h){
+  const light = mix(color,'#ffffff',.78), acc = mix(color,'#000000',.1);
+  c.save();
+  if(type === 'white'){ c.fillStyle = '#ffffff'; c.fillRect(0,0,w,h); }
+  else if(type === 'black'){ c.fillStyle = '#231f2e'; c.fillRect(0,0,w,h); }
+  else if(type === 'solid'){ c.fillStyle = color; c.fillRect(0,0,w,h); }
+  else if(type === 'gradient'){ const g = c.createLinearGradient(0,0,w,h); g.addColorStop(0,color); g.addColorStop(1,mix(color,'#ffffff',.8)); c.fillStyle = g; c.fillRect(0,0,w,h); }
+  else {
+    c.fillStyle = light; c.fillRect(0,0,w,h);
+    if(type === 'dots'){
+      c.fillStyle = color;
+      for(let r = 0, y = 24; y < h + 30; y += 40, r++) for(let x = 24 + (r % 2) * 20; x < w + 30; x += 40){ c.beginPath(); c.arc(x,y,7,0,Math.PI*2); c.fill(); }
+    } else if(type === 'stripes'){
+      c.strokeStyle = color; c.lineWidth = 20;
+      for(let x = -h; x < w + h; x += 64){ c.beginPath(); c.moveTo(x,0); c.lineTo(x + h,h); c.stroke(); }
+    } else if(type === 'pattern'){
+      c.strokeStyle = acc; c.lineWidth = 3; c.globalAlpha = .8;
+      for(let r = 0, y = 0; y < h + 40; y += 32, r++) for(let x = (r % 2) * 34; x < w + 60; x += 68){ c.beginPath(); c.arc(x,y,34,0,Math.PI*2); c.stroke(); }
+    } else if(type === 'geometry'){
+      c.fillStyle = color; c.globalAlpha = .65;
+      for(let r = 0, y = 40; y < h + 40; y += 90, r++) for(let k = 0, x = 45 + (r % 2) * 50; x < w + 50; x += 100, k++){
+        c.beginPath();
+        if((k + r) % 2){ c.moveTo(x,y-26); c.lineTo(x+26,y+20); c.lineTo(x-26,y+20); }
+        else { c.moveTo(x,y+26); c.lineTo(x+26,y-20); c.lineTo(x-26,y-20); }
+        c.closePath(); c.fill();
+      }
+    }
+  }
+  c.restore();
+}
+
+/* =========================================================
+   作品キャンバスの描画
+   ========================================================= */
+function paintScene(c){
+  paintBackground(c, S.bgType, S.bgColor, W, H);
+  S.items.forEach(it => drawItem(c,it));
+}
+function drawSelection(c){
+  const it = sel(); if(!it) return;
+  const b = bounds(it);
+  c.save(); c.translate(it.x,it.y); c.rotate(it.rotation*Math.PI/180);
+  if(it.type === 'word' && scope === 'one' && gSel >= 0 && it.glyphs[gSel]){
+    c.save(); c.scale(it.scale,it.scale);
+    const L = layoutWord(it), p = L.pos[gSel];
+    c.fillStyle = 'rgba(255,138,92,.25)'; c.fillRect(-L.total/2 + p.x, LINES[0] - CY - 12, p.w, LINES[3] - LINES[0] + 24);
+    c.restore();
+  }
+  c.strokeStyle = '#ff8a5c'; c.lineWidth = 3; c.setLineDash([9,6]); c.strokeRect(-b.hw,-b.hh,b.hw*2,b.hh*2); c.setLineDash([]);
+  c.beginPath(); c.moveTo(0,-b.hh); c.lineTo(0,-b.hh-28); c.stroke();
+  // 回転ハンドル
+  c.fillStyle = '#ffcf5c'; c.strokeStyle = '#fff'; c.lineWidth = 3;
+  c.beginPath(); c.arc(0,-b.hh-42,16,0,Math.PI*2); c.fill(); c.stroke();
+  c.strokeStyle = '#7a4a1c'; c.lineWidth = 2.5; c.beginPath(); c.arc(0,-b.hh-42,7,.4,Math.PI*1.7); c.stroke();
+  c.fillStyle = '#7a4a1c'; c.beginPath(); c.moveTo(5,-b.hh-52); c.lineTo(12,-b.hh-44); c.lineTo(3,-b.hh-43); c.closePath(); c.fill();
+  // 拡大縮小ハンドル
+  c.fillStyle = '#ff8a5c'; c.strokeStyle = '#fff'; c.lineWidth = 3;
+  c.beginPath(); c.arc(b.hw,b.hh,15,0,Math.PI*2); c.fill(); c.stroke();
+  c.strokeStyle = '#fff'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(b.hw-5,b.hh-5); c.lineTo(b.hw+5,b.hh+5); c.moveTo(b.hw+5,b.hh+1); c.lineTo(b.hw+5,b.hh+5); c.lineTo(b.hw+1,b.hh+5); c.moveTo(b.hw-5,b.hh-1); c.lineTo(b.hw-5,b.hh-5); c.lineTo(b.hw-1,b.hh-5); c.stroke();
+  c.restore();
+}
+function draw(){
+  ctx.setTransform(SS,0,0,SS,0,0); ctx.clearRect(0,0,W,H);
+  paintScene(ctx); drawSelection(ctx);
+}
+function local(it,p){ const a = -it.rotation*Math.PI/180, dx = p.x - it.x, dy = p.y - it.y; return { x:dx*Math.cos(a) - dy*Math.sin(a), y:dx*Math.sin(a) + dy*Math.cos(a) }; }
+function pick(p){
+  for(let i = S.items.length - 1; i >= 0; i--){
+    const it = S.items[i], q = local(it,p), b = bounds(it);
+    if(Math.abs(q.x) < Math.max(b.hw,22) + 8 && Math.abs(q.y) < Math.max(b.hh,22) + 8) return it;
+  }
+  return null;
+}
+function fitCanvas(){
+  if(view !== 'design') return;
+  const stage = $('designStage').parentElement;
+  const availW = stage.clientWidth - 44 - 30;
+  const availH = Math.max(280, window.innerHeight - 270);
+  const w = Math.max(240, Math.min(availW, availH * W / H, W));
+  art.style.width = w + 'px';
+}
+window.addEventListener('resize', fitCanvas);
+if(window.ResizeObserver) new ResizeObserver(fitCanvas).observe(document.querySelector('.stage'));
+
+/* =========================================================
+   作品キャンバスの操作
+   ========================================================= */
+art.addEventListener('contextmenu', e => e.preventDefault());
+board.addEventListener('contextmenu', e => e.preventDefault());
+art.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if(gesture) return;
+  const p = pt(e,art,W,H), s = sel();
+  if(s){
+    const q = local(s,p), b = bounds(s);
+    if(Math.hypot(q.x - b.hw, q.y - b.hh) < 32){
+      gesture = { kind:'resize', id:s.id, pid:e.pointerId, scale:s.scale, d0:Math.max(10, Math.hypot(p.x - s.x, p.y - s.y)) };
+    } else if(Math.hypot(q.x, q.y + b.hh + 42) < 28){
+      gesture = { kind:'rotate', id:s.id, pid:e.pointerId };
+    }
+  }
+  if(!gesture){
+    const hit = pick(p);
+    if(!hit){ select(null); return; }
+    select(hit.id);
+    gesture = { kind:'move', id:hit.id, pid:e.pointerId, start:p, x:hit.x, y:hit.y };
+  }
+  try { art.setPointerCapture(e.pointerId); } catch (err) {}
+});
+art.addEventListener('pointermove', e => {
+  if(!gesture || e.pointerId !== gesture.pid) return;
+  e.preventDefault();
+  const p = pt(e,art,W,H), it = S.items.find(x => x.id === gesture.id); if(!it) return;
+  if(gesture.kind === 'move'){
+    it.x = Math.max(0, Math.min(W, gesture.x + p.x - gesture.start.x));
+    it.y = Math.max(0, Math.min(H, gesture.y + p.y - gesture.start.y));
+  } else if(gesture.kind === 'resize'){
+    const d = Math.hypot(p.x - it.x, p.y - it.y);
+    it.scale = Math.max(.15, Math.min(4, gesture.scale * d / gesture.d0));
+    $('sizeSlider').value = Math.round(it.scale * 100);
+  } else {
+    let a = Math.atan2(p.y - it.y, p.x - it.x) * 180 / Math.PI + 90;
+    if(a > 180) a -= 360;
+    const snap = Math.round(a / 15) * 15; if(Math.abs(a - snap) < 4) a = snap;
+    it.rotation = Math.round(a);
+    $('rotateSlider').value = it.rotation;
+  }
+  draw();
+});
+function endGesture(e){ if(!gesture || e.pointerId !== gesture.pid) return; gesture = null; persist(); }
+art.addEventListener('pointerup', endGesture);
+art.addEventListener('pointercancel', endGesture);
+art.addEventListener('keydown', e => {
+  const it = sel(); if(!it) return;
+  const d = { ArrowLeft:[-10,0], ArrowRight:[10,0], ArrowUp:[0,-10], ArrowDown:[0,10] }[e.key];
+  if(d){ e.preventDefault(); it.x += d[0]; it.y += d[1]; draw(); persist(); }
+  else if(e.key === 'Delete' || e.key === 'Backspace'){ e.preventDefault(); deleteSelected(); }
+});
+
+function select(id){
+  if(selected !== id){ gSel = -1; scope = 'all'; }
+  selected = id;
+  if(id !== null && view === 'design') dtab = 'edit';
+  refresh(); draw();
+}
+
+/* =========================================================
+   手書きボード
+   ========================================================= */
+function drawBoard(){
+  wc.setTransform(SS,0,0,SS,0,0);
+  wc.clearRect(0,0,BW,BH);
+  wc.fillStyle = '#fffefb'; wc.fillRect(0,0,BW,BH);
+  wc.fillStyle = '#fff6e6'; wc.fillRect(0,LINES[1],BW,LINES[2]-LINES[1]);
+  fourLines(wc,0,BW,1);
+  strokes.forEach(s => strokePath(wc,s,s.color,s.width));
+  if(activeStroke) strokePath(wc,activeStroke,activeStroke.color,activeStroke.width);
+}
+board.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if(activePointer !== null) return;
+  activePointer = e.pointerId;
+  try { board.setPointerCapture(e.pointerId); } catch (err) {}
+  const p = pt(e,board,BW,BH);
+  activeStroke = { points:[[p.x,p.y,performance.now()]], color:penColor, width:penWidth };
+  clearTimeout(recogTimer);
+  wc.fillStyle = penColor; wc.beginPath(); wc.arc(p.x,p.y,penWidth/2,0,Math.PI*2); wc.fill();
+});
+board.addEventListener('pointermove', e => {
+  if(!activeStroke || e.pointerId !== activePointer) return;
+  e.preventDefault();
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  (evs.length ? evs : [e]).forEach(ev => {
+    const p = pt(ev,board,BW,BH);
+    p.x = Math.max(0,Math.min(BW,p.x)); p.y = Math.max(0,Math.min(BH,p.y));
+    const last = activeStroke.points[activeStroke.points.length - 1];
+    if(Math.hypot(p.x - last[0], p.y - last[1]) < .8) return;
+    activeStroke.points.push([p.x,p.y,performance.now()]);
+    wc.strokeStyle = activeStroke.color; wc.lineWidth = activeStroke.width; wc.lineCap = 'round'; wc.lineJoin = 'round';
+    wc.beginPath(); wc.moveTo(last[0],last[1]); wc.lineTo(p.x,p.y); wc.stroke();
+  });
+});
+function finishStroke(e){
+  if(!activeStroke || e.pointerId !== activePointer) return;
+  e.preventDefault();
+  strokes.push(activeStroke); activeStroke = null; activePointer = null;
+  scheduleRecog();
+}
+board.addEventListener('pointerup', finishStroke);
+board.addEventListener('pointercancel', finishStroke);
+
+/* ---- 手書き文字のよみとり（ブラウザ内蔵の機能。外部サービスは使わない） ---- */
+let recognizer = null, recogTimer = null, recogPromise = null, letterManual = false;
+async function initRecognizer(){
+  try {
+    if(!('createHandwritingRecognizer' in navigator) || typeof HandwritingStroke === 'undefined') return;
+    recognizer = await navigator.createHandwritingRecognizer({ languages:['en'] });
+  } catch (e) { recognizer = null; }
+  updateWriteUI();
+}
+async function recognizeNow(){
+  if(!recognizer || !strokes.length) return;
+  let d = null;
+  try {
+    d = recognizer.startDrawing({ recognitionType:'text', inputType:'touch', textContext:'', alternatives:8 });
+    const t0 = (strokes[0].points[0] && strokes[0].points[0][2]) || 0;
+    let fake = 0;
+    strokes.forEach(s => {
+      const hs = new HandwritingStroke();
+      s.points.forEach(p => { fake += 8; hs.addPoint({ x:p[0], y:p[1], t:Math.max(0, Math.round(p[2] ? p[2] - t0 : fake)) }); });
+      d.addStroke(hs);
+    });
+    const res = await d.getPrediction();
+    const cand = (res || []).map(r => (r.text || '').trim().toLowerCase()).find(t => /^[a-z]$/.test(t));
+    if(cand && !letterManual && strokes.length){ letter = cand; updateWriteUI(); }
+  } catch (e) { /* よみとれなくても、文字は自分でえらべる */ }
+  finally { try { d && d.clear(); } catch (e) {} }
+}
+function scheduleRecog(){
+  if(!recognizer || letterManual || !strokes.length) return;
+  clearTimeout(recogTimer);
+  recogTimer = setTimeout(() => { recogPromise = recognizeNow().finally(() => { recogPromise = null; }); }, 450);
+}
+
+$('undoStroke').onclick = () => { strokes.pop(); drawBoard(); scheduleRecog(); };
+$('clearStrokes').onclick = () => { strokes = []; activeStroke = null; activePointer = null; letterManual = false; clearTimeout(recogTimer); drawBoard(); updateWriteUI(); toast('もう一度書けるよ。'); };
+$('penWidth').addEventListener('input', e => { penWidth = Number(e.target.value); persist(); });
+
+/* ---- 文字を足す・作品に入れる ---- */
+function writeWordObj(){
+  if(writeTarget !== null){
+    const it = S.items.find(x => x.id === writeTarget && x.type === 'word');
+    if(it) return it;
+    writeTarget = null;
+  }
+  return { glyphs:S.draft, isDraft:true };
+}
+function curWord(){
+  if(view === 'write') return writeWordObj();
+  const it = sel(); return it && it.type === 'word' ? it : null;
+}
+async function addGlyph(silent){
+  if(recognizer && strokes.length && !letterManual){ clearTimeout(recogTimer); await (recogPromise || recognizeNow()); }
+  const g = makeGlyph();
+  if(!g){ if(!silent) toast('まず4線の上に文字を書いてね。'); return false; }
+  const w = writeWordObj();
+  if(editIdx !== null && w.glyphs[editIdx]){
+    const old = w.glyphs[editIdx];
+    g.font = old.font; w.glyphs[editIdx] = g; editIdx = null;
+    toast('書き直したよ！');
+  } else {
+    w.glyphs.push(g);
+    if(!silent) toast('「' + g.ch + '」を足したよ。つぎの文字も書こう！');
+  }
+  gSel = -1; scope = 'all';
+  strokes = []; activeStroke = null; activePointer = null; letterManual = false;
+  drawBoard(); refresh(); draw(); persist();
+  return true;
+}
+async function finishWord(){
+  if(strokes.length) await addGlyph(true);
+  if(writeTarget !== null){
+    const it = S.items.find(x => x.id === writeTarget);
+    if(it){ writeTarget = null; setView('design'); select(it.id); return; }
+    writeTarget = null;
+  }
+  if(!S.draft.length){ toast('まず文字を書いてね。'); return; }
+  const it = newWord(S.draft); S.draft = [];
+  S.items.push(it); editIdx = null;
+  setView('design'); select(it.id); persist();
+  toast('作品に入れたよ！ドラッグして動かしてみよう。');
+}
+$('addLetter').onclick = () => addGlyph(false);
+$('finishWord').onclick = finishWord;
+$('cancelEdit').onclick = () => { editIdx = null; strokes = []; drawBoard(); refresh(); toast('書き直しをやめたよ。'); };
+
+/* ---- 文字の並び（チップ） ---- */
+function thumb(g){
+  const sc = .26, gw = glyphWidth(g), w = Math.max(34, Math.round(gw*sc) + 6), h = Math.round(BH*sc);
+  const c = document.createElement('canvas'); c.width = w*2; c.height = h*2; c.style.width = w + 'px'; c.style.height = h + 'px';
+  const t = c.getContext('2d');
+  t.setTransform(2*sc,0,0,2*sc,(w*2 - gw*2*sc)/2,0);
+  fourLines(t,-1000,1000,.7); drawGlyph(t,g);
+  return c;
+}
+function renderStrip(el){
+  el.innerHTML = '';
+  const w = curWord();
+  if(!w || !w.glyphs.length){ const p = document.createElement('p'); p.className = 'note'; p.textContent = 'まだ文字がないよ。'; el.appendChild(p); return; }
+  const wrap = document.createElement('div'); wrap.className = 'chips';
+  w.glyphs.forEach((g,i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (i === gSel ? ' selected' : '');
+    b.setAttribute('aria-label', (i+1) + '文字目 ' + g.ch);
+    b.appendChild(thumb(g));
+    const s = document.createElement('span'); s.textContent = g.ch; b.appendChild(s);
+    b.onclick = () => { gSel = (gSel === i) ? -1 : i; scope = gSel >= 0 ? 'one' : 'all'; refresh(); draw(); };
+    wrap.appendChild(b);
+  });
+  el.appendChild(wrap);
+  const row = document.createElement('div'); row.className = 'row';
+  const mk = (label,fn,cls) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn small ' + (cls || ''); b.textContent = label; b.disabled = gSel < 0; b.onclick = fn; row.appendChild(b); };
+  mk('◀ 前へ', () => moveGlyph(-1));
+  mk('後ろへ ▶', () => moveGlyph(1));
+  mk('✎ 書き直す', beginRewrite);
+  mk('× けす', deleteGlyph, 'danger');
+  el.appendChild(row);
+  if(gSel < 0){ const p = document.createElement('p'); p.className = 'note'; p.textContent = '文字をタップすると、順番を変えたり書き直したりできるよ。'; el.appendChild(p); }
+  else if(w.glyphs[gSel]){
+    const p = document.createElement('p'); p.className = 'note'; p.textContent = 'この文字は何？（まちがっていたら、タップして直そう）'; el.appendChild(p);
+    const grid = document.createElement('div'); grid.className = 'letters';
+    'abcdefghijklmnopqrstuvwxyz'.split('').forEach(ch => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'letter' + (ch === w.glyphs[gSel].ch ? ' chosen' : ''); b.textContent = ch;
+      b.setAttribute('aria-label', ch + ' に直す');
+      b.onclick = () => { w.glyphs[gSel].ch = ch; refresh(); draw(); persist(); };
+      grid.appendChild(b);
+    });
+    el.appendChild(grid);
+  }
+}
+function moveGlyph(d){
+  const w = curWord(); if(!w || gSel < 0) return;
+  const j = gSel + d; if(j < 0 || j >= w.glyphs.length) return;
+  [w.glyphs[gSel], w.glyphs[j]] = [w.glyphs[j], w.glyphs[gSel]]; gSel = j;
+  refresh(); draw(); persist();
+}
+function deleteGlyph(){
+  const w = curWord(); if(!w || gSel < 0) return;
+  w.glyphs.splice(gSel,1); gSel = -1; scope = 'all';
+  if(!w.isDraft && !w.glyphs.length){
+    S.items = S.items.filter(x => x.id !== w.id);
+    if(writeTarget === w.id) writeTarget = null;
+    selected = null;
+  }
+  refresh(); draw(); persist();
+}
+function beginRewrite(){
+  const w = curWord();
+  if(!w || gSel < 0 || !w.glyphs[gSel]){ toast('書き直す文字を、一覧からえらんでね。'); return; }
+  const g = w.glyphs[gSel];
+  if(view === 'design') writeTarget = w.id;
+  editIdx = gSel; letter = g.ch; letterManual = true;
+  const dx = (BW - g.w) / 2;
+  strokes = g.strokes.map(s => ({ color:g.color || s.color, width:s.width, points:s.points.map(p => [p[0] + dx, p[1], p[2] || 0]) }));
+  activeStroke = null; activePointer = null;
+  setView('write'); drawBoard();
+  toast('書き直したら「✓ 書き直した文字を入れる」を押してね。');
+}
+
+/* =========================================================
+   画面切り替え
+   ========================================================= */
+function setView(v){
+  view = v;
+  $('writeStage').classList.toggle('hidden', v !== 'write');
+  $('designStage').classList.toggle('hidden', v !== 'design');
+  $('writePanel').classList.toggle('hidden', v !== 'write');
+  $('designPanel').classList.toggle('hidden', v !== 'design');
+  $('writeTab').classList.toggle('active', v === 'write');
+  $('designTab').classList.toggle('active', v === 'design');
+  if(v === 'write') drawBoard();
+  refresh(); draw(); fitCanvas();
+}
+$('writeTab').onclick = () => { writeTarget = null; setView('write'); };
+$('designTab').onclick = () => {
+  if(strokes.length && editIdx === null){ /* 書きかけは残す */ }
+  setView('design');
+};
+
+/* =========================================================
+   パネルのUI
+   ========================================================= */
+function targets(it){ return (scope === 'one' && gSel >= 0 && it.glyphs[gSel]) ? [it.glyphs[gSel]] : it.glyphs; }
+function updateWriteUI(){
+  const auto = !!recognizer;
+  $('curLetterBadge').innerHTML = (auto && !letterManual && strokes.length ? 'よみとった文字' : 'いま書く文字') + '<b>' + letter + '</b>';
+  $('step1').innerHTML = auto ? '<span>1</span>4線に指で書く（文字は自動でよみとるよ）' : '<span>1</span>右で文字をえらぶ';
+  $('step2').innerHTML = auto ? '<span>2</span>まちがっていたら右で直す' : '<span>2</span>4線に指で書く';
+  $('letterHeading').textContent = auto ? '① 4線に書くと、文字をよみとるよ' : '① 書く文字をえらぼう';
+  $('letterNote').textContent = auto ? 'まちがっていたら、ここをタップして直してね。（フォントに変えるときに使うよ）' : '書いた文字と同じ文字をえらんでね。（フォントに変えるときに使うよ）';
+  document.querySelectorAll('#letterChoices .letter').forEach(b => b.classList.toggle('chosen', b.dataset.letter === letter));
+  document.querySelectorAll('#penColors .swatch').forEach(b => b.classList.toggle('chosen', b.dataset.color === penColor));
+  $('penWidth').value = penWidth;
+  const editing = editIdx !== null;
+  $('cancelEdit').classList.toggle('hidden', !editing);
+  $('addLetter').textContent = editing ? '✓ 書き直した文字を入れる' : '＋ この文字を足す';
+  const t = writeTarget !== null && S.items.find(x => x.id === writeTarget);
+  $('writeModeNote').textContent = t ? '作品の文字列に足しているよ。足すと、すぐ作品に入るよ。' : '新しい文字列を作っているよ。名前なら、1文字ずつ足していこう。';
+}
+function refreshEdit(){
+  const it = sel();
+  $('editEmpty').classList.toggle('hidden', !!it);
+  $('editBody').classList.toggle('hidden', !it);
+  if(!it) return;
+  const isWord = it.type === 'word';
+  $('wordBox').classList.toggle('hidden', !isWord);
+  $('paletteBox').classList.toggle('hidden', !isWord);
+  $('sizeSlider').value = Math.max(15, Math.min(400, Math.round(it.scale * 100)));
+  $('rotateSlider').value = it.rotation;
+  $('opacitySlider').value = Math.round(it.opacity * 100);
+  if(isWord){
+    renderStrip($('stripDesign'));
+    $('scopeAll').classList.toggle('active', scope === 'all' || gSel < 0);
+    $('scopeOne').classList.toggle('active', scope === 'one' && gSel >= 0);
+    const tg = targets(it);
+    $('handMode').classList.toggle('active', tg.every(g => g.display !== 'font'));
+    $('fontMode').classList.toggle('active', tg.every(g => g.display === 'font'));
+    $('fontBox').classList.toggle('hidden', !tg.some(g => g.display === 'font'));
+    const sample = it.glyphs.map(g => g.ch).join('').slice(0,8) || 'abc';
+    document.querySelectorAll('.font-choice').forEach(b => {
+      b.querySelector('.sample').textContent = sample;
+      b.classList.toggle('selected', tg.length > 0 && tg.every(g => g.font === b.dataset.font));
+    });
+  }
+}
+function updateTabs(){
+  ['edit','tpl','bg','deco'].forEach(k => {
+    $('tab-' + k).classList.toggle('active', dtab === k);
+    $('sec-' + k).classList.toggle('hidden', dtab !== k);
+  });
+  document.querySelectorAll('[data-bg]').forEach(b => b.classList.toggle('selected', b.dataset.bg === S.bgType));
+  document.querySelectorAll('#bgColors .swatch').forEach(b => b.classList.toggle('chosen', b.dataset.color === S.bgColor));
+  $('guidesBtn').textContent = S.guides ? '📏 4線を隠す' : '📏 4線を表示';
+  $('guidesBtn').classList.toggle('active', S.guides);
+  $('workTitle').textContent = TITLES[S.kind];
+}
+function refresh(){
+  updateWriteUI();
+  if(view === 'write') renderStrip($('stripWrite'));
+  if(view === 'design'){ refreshEdit(); updateTabs(); }
+}
+['edit','tpl','bg','deco'].forEach(k => { $('tab-' + k).onclick = () => { dtab = k; updateTabs(); }; });
+
+$('scopeAll').onclick = () => { scope = 'all'; gSel = -1; refresh(); draw(); };
+$('scopeOne').onclick = () => { const it = sel(); if(!it || it.type !== 'word') return; scope = 'one'; if(gSel < 0) gSel = 0; refresh(); draw(); };
+$('handMode').onclick = () => { const it = sel(); if(it && it.type === 'word'){ targets(it).forEach(g => g.display = 'hand'); refresh(); draw(); persist(); } };
+$('fontMode').onclick = () => { const it = sel(); if(it && it.type === 'word'){ targets(it).forEach(g => g.display = 'font'); refresh(); draw(); persist(); } };
+$('addMore').onclick = () => { const it = sel(); if(!it || it.type !== 'word') return; writeTarget = it.id; editIdx = null; setView('write'); };
+
+[['sizeSlider','scale',v => v/100],['rotateSlider','rotation',Number],['opacitySlider','opacity',v => v/100]].forEach(([id,key,fn]) =>
+  $(id).addEventListener('input', e => { const it = sel(); if(it){ it[key] = fn(e.target.value); draw(); persist(); } }));
+
+function setColor(c){
+  const it = sel(); if(!it) return;
+  if(it.type === 'shape') it.color = c; else targets(it).forEach(g => g.color = c);
+  draw(); refresh(); persist();
+}
+function duplicate(){
+  const it = sel(); if(!it) return;
+  const copy = cloneJSON(it); copy.id = uid(); copy.templateDeco = false;
+  copy.x = Math.min(W - 20, it.x + 40); copy.y = Math.min(H - 20, it.y + 40);
+  S.items.push(copy); select(copy.id); persist();
+}
+function deleteSelected(){
+  if(selected === null) return;
+  S.items = S.items.filter(x => x.id !== selected); selected = null; gSel = -1; scope = 'all';
+  refresh(); draw(); persist(); toast('えらんだものを消したよ。');
+}
+function layer(dir){
+  const i = S.items.findIndex(x => x.id === selected), j = i + dir;
+  if(i < 0 || j < 0 || j >= S.items.length) return;
+  [S.items[i], S.items[j]] = [S.items[j], S.items[i]]; draw(); persist();
+}
+$('duplicateBtn').onclick = duplicate; $('deleteBtn').onclick = deleteSelected;
+$('backwardBtn').onclick = () => layer(-1); $('forwardBtn').onclick = () => layer(1);
+
+$('guidesBtn').onclick = () => { S.guides = !S.guides; updateTabs(); draw(); persist(); };
+$('bringBackBtn').onclick = () => {
+  S.items.forEach(it => {
+    it.x = Math.max(60, Math.min(W - 60, it.x)); it.y = Math.max(60, Math.min(H - 60, it.y));
+    const b = bounds(it);
+    if(b.hw * 2 > W * 1.1) it.scale *= (W * 1.0) / (b.hw * 2);
+    if(b.hh * 2 > H * 1.1) it.scale *= (H * 1.0) / (b.hh * 2);
+  });
+  refresh(); draw(); persist(); toast('はみ出したものを中に戻したよ。');
+};
+
+/* =========================================================
+   背景・テンプレート・かざり
+   ========================================================= */
+function applyTemplate(t){
+  S.bgType = t.bg; S.bgColor = t.bgColor;
+  S.items = S.items.filter(i => !i.templateDeco);
+  S.items.filter(i => i.type === 'word').forEach(w => w.glyphs.forEach((g,i) => {
+    g.color = Array.isArray(t.text) ? t.text[i % t.text.length] : t.text; g.font = t.font;
+  }));
+  const decos = t.deco.map(d => ({ id:uid(), type:'shape', key:d[0], x:d[1]*W, y:d[2]*H, scale:d[3], rotation:d[4], opacity:.9, color:d[5], templateDeco:true }));
+  S.items = decos.concat(S.items);
+  if(selected !== null && !sel()) selected = null;
+  refresh(); draw(); persist();
+  toast('「' + t.name + '」をえらんだよ。あとから自由に変えられるよ。');
+}
+function addShape(key){
+  const n = S.items.length;
+  const it = { id:uid(), type:'shape', key, x:W/2 + ((n % 5) - 2) * 24, y:H/2 + ((n % 3) - 1) * 24, scale:1, rotation:0, opacity:1, color:DEFAULT_SHAPE_COLOR[key] || '#ff6b4a' };
+  S.items.push(it); select(it.id); persist();
+  toast('足したよ。ドラッグして動かそう。');
+}
+function miniShape(key,color){
+  const c = document.createElement('canvas'); c.width = 96; c.height = 96; c.style.width = '48px'; c.style.height = '48px';
+  const t = c.getContext('2d'); t.translate(48,48); t.scale(.72,.72); shapeDraw(t,key,color); return c;
+}
+
+/* =========================================================
+   UI部品を組み立てる
+   ========================================================= */
+function buildUI(){
+  const lc = $('letterChoices');
+  'abcdefghijklmnopqrstuvwxyz'.split('').forEach(ch => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'letter'; b.textContent = ch; b.dataset.letter = ch;
+    b.setAttribute('aria-label', ch + ' をえらぶ');
+    b.onclick = () => { letter = ch; letterManual = true; updateWriteUI(); persist(); };
+    lc.appendChild(b);
+  });
+  COLORS.forEach(color => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch'; b.style.background = color; b.dataset.color = color; b.setAttribute('aria-label','ペンの色');
+    b.onclick = () => { penColor = color; updateWriteUI(); persist(); };
+    $('penColors').appendChild(b);
+    const o = document.createElement('button'); o.type = 'button'; o.className = 'swatch'; o.style.background = color; o.setAttribute('aria-label','色');
+    o.onclick = () => setColor(color);
+    $('objColors').appendChild(o);
+  });
+  PALETTES.forEach(([name,cols]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn small'; b.textContent = name;
+    b.onclick = () => { const it = sel(); if(it && it.type === 'word'){ it.glyphs.forEach((g,i) => g.color = cols[i % cols.length]); draw(); refresh(); persist(); } };
+    $('palettes').appendChild(b);
+  });
+  FONTS.forEach(f => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'font-choice'; b.dataset.font = f.family;
+    const s = document.createElement('span'); s.className = 'sample'; s.style.fontFamily = `"${f.family}", sans-serif`; s.style.fontWeight = f.weight; s.textContent = 'abc';
+    const l = document.createElement('small'); l.textContent = f.label;
+    b.appendChild(s); b.appendChild(l);
+    b.onclick = () => { const it = sel(); if(it && it.type === 'word'){ targets(it).forEach(g => g.font = f.family); refresh(); draw(); persist(); } };
+    $('fontChoices').appendChild(b);
+  });
+  BACKGROUNDS.forEach(([name,key]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.dataset.bg = key;
+    const c = document.createElement('canvas'); c.width = 180; c.height = 104; c.style.width = '90px'; c.style.height = '52px';
+    const t = c.getContext('2d'); t.scale(.2,.2); paintBackground(t,key,'#ffb08a',900,520);
+    b.appendChild(c); const s = document.createElement('span'); s.textContent = name; b.appendChild(s);
+    b.onclick = () => { S.bgType = key; refresh(); draw(); persist(); };
+    $('backgrounds').appendChild(b);
+  });
+  BG_COLORS.forEach(color => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch'; b.style.background = color; b.dataset.color = color; b.setAttribute('aria-label','背景の色');
+    b.onclick = () => { S.bgColor = color; if(S.bgType === 'white' || S.bgType === 'black') S.bgType = 'solid'; refresh(); draw(); persist(); };
+    $('bgColors').appendChild(b);
+  });
+  TEMPLATES.forEach(tp => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tile';
+    const c = document.createElement('canvas'); c.width = 220; c.height = 128; c.style.width = '110px'; c.style.height = '64px';
+    b.appendChild(c); const s = document.createElement('span'); s.textContent = tp.name; b.appendChild(s);
+    b.onclick = () => applyTemplate(tp);
+    $('templates').appendChild(b);
+    tp._canvas = c;
+  });
+  SHAPES.forEach(([key,name]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.appendChild(miniShape(key,DEFAULT_SHAPE_COLOR[key]));
+    const s = document.createElement('span'); s.textContent = name; b.appendChild(s); b.onclick = () => addShape(key); $('shapes').appendChild(b);
+  });
+  ICONS.forEach(([key,name]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.appendChild(miniShape(key,DEFAULT_SHAPE_COLOR[key]));
+    const s = document.createElement('span'); s.textContent = name; b.appendChild(s); b.onclick = () => addShape(key); $('icons').appendChild(b);
+  });
+  paintTemplatePreviews();
+}
+function paintTemplatePreviews(){
+  TEMPLATES.forEach(tp => {
+    const t = tp._canvas.getContext('2d');
+    t.setTransform(1,0,0,1,0,0); t.clearRect(0,0,220,128);
+    t.save(); t.scale(220/900,128/520);
+    paintBackground(t,tp.bg,tp.bgColor,900,520);
+    tp.deco.forEach(d => { t.save(); t.translate(d[1]*900,d[2]*520); t.rotate(d[4]*Math.PI/180); t.scale(d[3],d[3]); shapeDraw(t,d[0],d[5]); t.restore(); });
+    const f = FONTS.find(x => x.family === tp.font) || FONTS[0];
+    t.fillStyle = Array.isArray(tp.text) ? tp.text[0] : tp.text;
+    t.font = `${f.weight} 190px "${f.family}", sans-serif`; t.textAlign = 'center'; t.textBaseline = 'middle'; t.fillText('abc',450,270);
+    t.restore();
+  });
+}
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(paintTemplatePreviews);
+
+/* =========================================================
+   新しい作品・最初から・保存
+   ========================================================= */
+function setKind(k){
+  S.kind = k; [W,H] = SIZES[k];
+  art.width = W * SS; art.height = H * SS;
+  fitCanvas();
+}
+function hasWork(){ return S.items.length > 0 || S.draft.length > 0 || strokes.length > 0; }
+function fresh(kind){
+  S = { kind, bgType:'white', bgColor:'#ffe3b3', guides:false, items:[], nextId:1, draft:[] };
+  selected = null; strokes = []; activeStroke = null; activePointer = null; writeTarget = null; editIdx = null; gSel = -1; scope = 'all'; dtab = 'tpl';
+  setKind(kind); setView('write'); persist();
+}
+function openKind(){
+  $('kindWarn').classList.toggle('hidden', !hasWork());
+  $('kindDialog').classList.remove('hidden');
+  const first = document.querySelector('.kind-card'); if(first) first.focus();
+}
+document.querySelectorAll('.kind-card').forEach(b => b.onclick = () => { $('kindDialog').classList.add('hidden'); fresh(b.dataset.kind); toast('まず、文字を書いてみよう！'); });
+$('kindClose').onclick = () => $('kindDialog').classList.add('hidden');
+$('kindDialog').addEventListener('click', e => { if(e.target === $('kindDialog')) $('kindDialog').classList.add('hidden'); });
+$('newBtn').onclick = openKind;
+
+function askConfirm(head,text,yes,action){
+  $('confirmHead').textContent = head; $('confirmText').textContent = text; $('confirmYes').textContent = yes;
+  confirmAction = action; $('confirmDialog').classList.remove('hidden'); $('confirmNo').focus();
+}
+$('resetBtn').onclick = () => {
+  if(!hasWork()){ fresh(S.kind); return; }
+  askConfirm('最初からやり直す？','いまの作品は消えます。のこしたいときは、先に「作品を保存」してね。','消して始める',() => fresh(S.kind));
+};
+$('confirmNo').onclick = () => $('confirmDialog').classList.add('hidden');
+$('confirmYes').onclick = () => { $('confirmDialog').classList.add('hidden'); if(confirmAction) confirmAction(); confirmAction = null; };
+$('confirmDialog').addEventListener('click', e => { if(e.target === $('confirmDialog')) $('confirmDialog').classList.add('hidden'); });
+window.addEventListener('keydown', e => { if(e.key === 'Escape'){ $('confirmDialog').classList.add('hidden'); $('kindDialog').classList.add('hidden'); } });
+
+$('saveBtn').onclick = () => {
+  if(!S.items.length){ toast('まだ作品に何も入っていないよ。「作品に入れる」を押してね。'); return; }
+  const out = document.createElement('canvas'); out.width = W * EXPORT; out.height = H * EXPORT;
+  const c = out.getContext('2d'); c.scale(EXPORT,EXPORT); paintScene(c);
+  out.toBlob(blob => {
+    if(!blob){ toast('画像を作れませんでした。もう一度ためしてね。'); return; }
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = S.kind === 'card' ? 'my-name-card.png' : 'my-alphabet-logo.png';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500);
+    toast('作品のPNG画像を保存したよ！');
+  }, 'image/png');
+};
+
+/* =========================================================
+   起動
+   ========================================================= */
+buildUI();
+initRecognizer();
+const restored = loadSaved();
+setKind(S.kind);
+loadFonts();
+if(restored){
+  setView(S.items.length ? 'design' : 'write');
+  if(view === 'design') dtab = 'tpl';
+  refresh();
+  toast('前の続きから始めたよ。');
+} else {
+  setView('write');
+  openKind();
+}
+})();
+</script>
+</body>
+</html>
