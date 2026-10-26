@@ -57,6 +57,12 @@ button:focus-visible,canvas:focus-visible{outline:4px solid #ffb703;outline-offs
 .canvas-frame{width:fit-content;max-width:100%;margin:auto;padding:12px;background:#fff;border-radius:22px;box-shadow:0 14px 40px #a77d4a33;border:3px solid #ffe2b3}
 #artboard{display:block;height:auto;border-radius:10px;touch-action:none;cursor:grab}
 #artboard:active{cursor:grabbing}
+#artboard.drawing,#artboard.drawing:active{cursor:crosshair}
+input[type=range].hue,input[type=range].lightness{-webkit-appearance:none;appearance:none;height:20px;border-radius:10px;border:2px solid var(--line-d)}
+input[type=range].hue{background:linear-gradient(90deg,hsl(0,72%,55%),hsl(60,72%,55%),hsl(120,72%,55%),hsl(180,72%,55%),hsl(240,72%,55%),hsl(300,72%,55%),hsl(360,72%,55%))}
+input[type=range].lightness{background:linear-gradient(90deg,#1e1a16,#ffffff)}
+input[type=range].hue::-webkit-slider-thumb,input[type=range].lightness::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#fff;border:4px solid #ff8a5c;box-shadow:0 2px 0 #e8683a}
+input[type=range].hue::-moz-range-thumb,input[type=range].lightness::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:4px solid #ff8a5c}
 .stage-tip{text-align:center;color:var(--soft);font-size:14px;font-weight:700;margin:14px 0 0}
 
 /* ---- side panel ---- */
@@ -138,15 +144,16 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
     <ol class="steps">
      <li id="step1"><span>1</span>右で文字をえらぶ</li>
      <li id="step2"><span>2</span>4線に指で書く</li>
-     <li><span>3</span>「この文字を足す」</li>
+     <li><span>3</span>「文字を足す」をおす</li>
      <li><span>4</span>書けたら「作品に入れる」</li>
     </ol>
     <div class="board-frame"><canvas id="writingBoard" width="1800" height="640" tabindex="0" aria-label="4線の手書きエリア"></canvas></div>
+    <p id="boardNote" class="note" style="text-align:center;margin-top:10px"></p>
     <div class="actions">
      <button id="undoStroke" type="button" class="btn">↶ 1画もどす</button>
      <button id="clearStrokes" type="button" class="btn">🧽 消して書き直す</button>
      <button id="cancelEdit" type="button" class="btn hidden">書き直しをやめる</button>
-     <button id="addLetter" type="button" class="btn big primary">＋ この文字を足す</button>
+     <button id="addLetter" type="button" class="btn big primary">＋ 文字を足す</button>
      <button id="finishWord" type="button" class="btn big go">✓ 作品に入れる</button>
     </div>
    </div>
@@ -161,7 +168,7 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
      </div>
     </div>
     <div class="canvas-frame" id="canvasFrame"><canvas id="artboard" width="1800" height="1040" tabindex="0" aria-label="作品キャンバス。文字や図形をタップして選び、ドラッグして動かせます"></canvas></div>
-    <p class="stage-tip">文字や図形をタップして動かそう。右下の丸で大きさ、上の丸で向きが変えられるよ。</p>
+    <p id="stageTip" class="stage-tip">文字や図形をタップして動かそう。右下の丸で大きさ、上の丸で向きが変えられるよ。</p>
    </div>
   </section>
 
@@ -206,7 +213,31 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
      <div id="backgrounds" class="tiles"></div>
      <div class="panel-section">
       <h3>背景の色</h3>
+      <div id="bgTargetBox" class="seg hidden" style="margin-bottom:10px">
+       <button id="bgTargetA" class="btn small" type="button">はじめの色</button>
+       <button id="bgTargetB" class="btn small" type="button">おわりの色</button>
+      </div>
       <div id="bgColors" class="swatches"></div>
+      <h3 style="margin-top:14px">🎨 じぶんで色をつくる</h3>
+      <div class="field"><label for="bgHue">いろあい</label><input id="bgHue" class="hue" type="range" min="0" max="360" value="30"></div>
+      <div class="field"><label for="bgLight">あかるさ</label><input id="bgLight" class="lightness" type="range" min="12" max="96" value="82"></div>
+     </div>
+     <div class="panel-section">
+      <h3>✏️ 背景に絵をかく</h3>
+      <p class="note">文字やかざりの後ろに、じぶんで絵やもようをかけるよ。</p>
+      <button id="bgDrawBtn" class="btn wide primary" type="button">✏️ 背景に絵をかく</button>
+      <div id="bgDrawBox" class="hidden" style="margin-top:12px">
+       <div class="seg">
+        <button id="bgPenMode" class="btn small" type="button">✏️ ペン</button>
+        <button id="bgEraserMode" class="btn small" type="button">🩹 けしごむ</button>
+       </div>
+       <div class="field"><label for="bgPenWidth">太さ</label><input id="bgPenWidth" type="range" min="4" max="60" value="14"></div>
+       <div id="bgPenColors" class="swatches"></div>
+       <div class="row" style="margin-top:10px">
+        <button id="bgUndo" class="btn small" type="button">↶ 1画もどす</button>
+        <button id="bgClear" class="btn small danger" type="button">全部消す</button>
+       </div>
+      </div>
      </div>
     </div>
 
@@ -364,7 +395,10 @@ const TEMPLATES = [
 /* =========================================================
    状態
    ========================================================= */
-let S = { kind:'card', bgType:'white', bgColor:'#ffe3b3', guides:false, items:[], nextId:1, draft:[] };
+let S = { kind:'card', bgType:'white', bgColor:'#ffe3b3', bgColor2:null, bgStrokes:[], guides:false, items:[], nextId:1, draft:[] };
+// 背景の絵・色づくり用の状態
+let bgDraw = false, bgActive = null, bgEraser = false, bgPenColor = '#ff6b4a', bgPenWidth = 14, bgTarget = 'a';
+let bgLayer = null, bgDirty = true;
 let W = 900, H = 520;
 let view = 'write';
 let selected = null;
@@ -406,6 +440,9 @@ function loadSaved(){
     if(!j || !j.S || !Array.isArray(j.S.items)) return false;
     S = Object.assign(S, j.S);
     if(!Array.isArray(S.draft)) S.draft = [];
+    if(!Array.isArray(S.bgStrokes)) S.bgStrokes = [];
+    if(S.bgColor2 === undefined) S.bgColor2 = null;
+    bgDirty = true;
     if(j.letter) letter = j.letter;
     if(j.penColor) penColor = j.penColor;
     if(j.penWidth) penWidth = j.penWidth;
@@ -458,17 +495,42 @@ function drawGlyph(c,g){
     g.strokes.forEach(s => strokePath(c, s, g.color || s.color, s.width));
   }
 }
-function makeGlyph(){
-  if(!strokes.length) return null;
+function makeGlyphFrom(list, ch){
+  if(!list.length) return null;
   let minX = 1e9, maxX = -1e9, maxW = 0;
-  strokes.forEach(s => { maxW = Math.max(maxW, s.width); s.points.forEach(p => { minX = Math.min(minX,p[0]); maxX = Math.max(maxX,p[0]); }); });
+  list.forEach(s => { maxW = Math.max(maxW, s.width); s.points.forEach(p => { minX = Math.min(minX,p[0]); maxX = Math.max(maxX,p[0]); }); });
   const pad = 16, span = maxX - minX;
   const w = Math.max(56, span + maxW + pad * 2);
   const dx = (w - span) / 2 - minX;
-  const st = strokes.map(s => ({ color:s.color, width:s.width, points:s.points.map(p => [Math.round((p[0]+dx)*10)/10, Math.round(p[1]*10)/10, Math.round(p[2] || 0)]) }));
+  const st = list.map(s => ({ color:s.color, width:s.width, points:s.points.map(p => [Math.round((p[0]+dx)*10)/10, Math.round(p[1]*10)/10, Math.round(p[2] || 0)]) }));
   const w0 = curWord();
   const font = (w0 && w0.glyphs[0] && w0.glyphs[0].font) || FONTS[0].family;
-  return { ch:letter, strokes:st, w:Math.round(w), display:'hand', font, color:null };
+  return { ch, strokes:st, w:Math.round(w), display:'hand', font, color:null };
+}
+/* 横にあいた空きを見て、書かれた線を文字ごとに分ける（iの点やtの横線は、となりの線と同じ文字になる） */
+const SPLIT_GAP = 8;
+function splitStrokes(list){
+  const info = list.map((s,i) => {
+    let a = 1e9, b = -1e9;
+    s.points.forEach(p => { a = Math.min(a,p[0]); b = Math.max(b,p[0]); });
+    return { i, a:a - s.width/2, b:b + s.width/2 };
+  }).sort((x,y) => x.a - y.a);
+  const clusters = []; let cur = null;
+  info.forEach(o => {
+    if(cur && o.a <= cur.b + SPLIT_GAP){ cur.items.push(o.i); cur.b = Math.max(cur.b, o.b); }
+    else { cur = { b:o.b, items:[o.i] }; clusters.push(cur); }
+  });
+  let groups = clusters.map(c => c.items.sort((x,y) => x - y).map(i => list[i]));
+  if(groups.length > 1){
+    // 指がふれただけの小さな点は、文字としてあつかわない
+    const big = groups.filter(g => {
+      let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+      g.forEach(s => s.points.forEach(p => { x0 = Math.min(x0,p[0]); x1 = Math.max(x1,p[0]); y0 = Math.min(y0,p[1]); y1 = Math.max(y1,p[1]); }));
+      return (x1 - x0) >= 10 || (y1 - y0) >= 10;
+    });
+    if(big.length) groups = big;
+  }
+  return groups;
 }
 
 /* =========================================================
@@ -557,13 +619,19 @@ function drawItem(c,it){
 /* =========================================================
    背景
    ========================================================= */
-function paintBackground(c,type,color,w,h){
+function hslToHex(h,s,l){
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return '#' + [f(0), f(8), f(4)].map(x => Math.round(x * 255).toString(16).padStart(2,'0')).join('');
+}
+function paintBackground(c,type,color,w,h,color2){
   const light = mix(color,'#ffffff',.78), acc = mix(color,'#000000',.1);
   c.save();
   if(type === 'white'){ c.fillStyle = '#ffffff'; c.fillRect(0,0,w,h); }
   else if(type === 'black'){ c.fillStyle = '#231f2e'; c.fillRect(0,0,w,h); }
   else if(type === 'solid'){ c.fillStyle = color; c.fillRect(0,0,w,h); }
-  else if(type === 'gradient'){ const g = c.createLinearGradient(0,0,w,h); g.addColorStop(0,color); g.addColorStop(1,mix(color,'#ffffff',.8)); c.fillStyle = g; c.fillRect(0,0,w,h); }
+  else if(type === 'gradient'){ const g = c.createLinearGradient(0,0,w,h); g.addColorStop(0,color); g.addColorStop(1,color2 || mix(color,'#ffffff',.8)); c.fillStyle = g; c.fillRect(0,0,w,h); }
   else {
     c.fillStyle = light; c.fillRect(0,0,w,h);
     if(type === 'dots'){
@@ -591,8 +659,24 @@ function paintBackground(c,type,color,w,h){
 /* =========================================================
    作品キャンバスの描画
    ========================================================= */
-function paintScene(c){
-  paintBackground(c, S.bgType, S.bgColor, W, H);
+/* 背景にかいた絵は、別の透明な層にためておく（けしごむが背景色まで消さないように） */
+function drawBgStroke(t,s){
+  t.save(); t.globalCompositeOperation = s.erase ? 'destination-out' : 'source-over';
+  strokePath(t, s, s.erase ? '#000000' : s.color, s.width); t.restore();
+}
+function buildBgLayer(k){
+  const c = document.createElement('canvas'); c.width = Math.round(W * k); c.height = Math.round(H * k);
+  const t = c.getContext('2d'); t.scale(k,k);
+  S.bgStrokes.forEach(s => drawBgStroke(t,s));
+  return c;
+}
+function getBgLayer(){
+  if(bgDirty || !bgLayer || bgLayer.width !== Math.round(W * SS) || bgLayer.height !== Math.round(H * SS)){ bgLayer = buildBgLayer(SS); bgDirty = false; }
+  return bgLayer;
+}
+function paintScene(c, layer){
+  paintBackground(c, S.bgType, S.bgColor, W, H, S.bgColor2);
+  if(layer && S.bgStrokes.length) c.drawImage(layer, 0, 0, W, H);
   S.items.forEach(it => drawItem(c,it));
 }
 function drawSelection(c){
@@ -620,7 +704,7 @@ function drawSelection(c){
 }
 function draw(){
   ctx.setTransform(SS,0,0,SS,0,0); ctx.clearRect(0,0,W,H);
-  paintScene(ctx); drawSelection(ctx);
+  paintScene(ctx, getBgLayer()); drawSelection(ctx);
 }
 function local(it,p){ const a = -it.rotation*Math.PI/180, dx = p.x - it.x, dy = p.y - it.y; return { x:dx*Math.cos(a) - dy*Math.sin(a), y:dx*Math.sin(a) + dy*Math.cos(a) }; }
 function pick(p){
@@ -636,18 +720,58 @@ function fitCanvas(){
   const availW = stage.clientWidth - 44 - 30;
   const availH = Math.max(280, window.innerHeight - 270);
   const w = Math.max(240, Math.min(availW, availH * W / H, W));
-  art.style.width = w + 'px';
+  const px = Math.round(w) + 'px';
+  if(art.style.width !== px) art.style.width = px;
 }
 window.addEventListener('resize', fitCanvas);
-if(window.ResizeObserver) new ResizeObserver(fitCanvas).observe(document.querySelector('.stage'));
+if(window.ResizeObserver){
+  // 幅が変わったときだけ、次のフレームで調整する（ResizeObserverのループ警告を防ぐ）
+  let lastStageW = 0, raf = 0;
+  new ResizeObserver(entries => {
+    const sw = Math.round(entries[0].contentRect.width);
+    if(sw === lastStageW) return;
+    lastStageW = sw;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(fitCanvas);
+  }).observe(document.querySelector('.stage'));
+}
 
 /* =========================================================
    作品キャンバスの操作
    ========================================================= */
 art.addEventListener('contextmenu', e => e.preventDefault());
 board.addEventListener('contextmenu', e => e.preventDefault());
+/* ---- 背景に絵をかく ---- */
+function startBgStroke(e){
+  if(bgActive) return;
+  const p = pt(e,art,W,H);
+  getBgLayer();                                   // 新しい線を足す前に、いまの層をそろえておく
+  const s = { points:[[Math.round(p.x*10)/10, Math.round(p.y*10)/10]], color:bgPenColor, width:bgPenWidth, erase:bgEraser };
+  S.bgStrokes.push(s); bgActive = { s, pid:e.pointerId };
+  try { art.setPointerCapture(e.pointerId); } catch (err) {}
+  const t = bgLayer.getContext('2d'); t.save(); t.setTransform(SS,0,0,SS,0,0); drawBgStroke(t,s); t.restore();
+  draw();
+}
+function moveBgStroke(e){
+  if(!bgActive || e.pointerId !== bgActive.pid) return false;
+  e.preventDefault();
+  const s = bgActive.s, t = bgLayer.getContext('2d');
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  (evs.length ? evs : [e]).forEach(ev => {
+    const p = pt(ev,art,W,H), last = s.points[s.points.length - 1];
+    if(Math.hypot(p.x - last[0], p.y - last[1]) < 1.5) return;
+    const np = [Math.round(p.x*10)/10, Math.round(p.y*10)/10];
+    s.points.push(np);
+    t.save(); t.setTransform(SS,0,0,SS,0,0);
+    drawBgStroke(t, { points:[last,np], color:s.color, width:s.width, erase:s.erase });
+    t.restore();
+  });
+  draw();
+  return true;
+}
 art.addEventListener('pointerdown', e => {
   e.preventDefault();
+  if(bgDraw){ startBgStroke(e); return; }
   if(gesture) return;
   const p = pt(e,art,W,H), s = sel();
   if(s){
@@ -667,6 +791,7 @@ art.addEventListener('pointerdown', e => {
   try { art.setPointerCapture(e.pointerId); } catch (err) {}
 });
 art.addEventListener('pointermove', e => {
+  if(moveBgStroke(e)) return;
   if(!gesture || e.pointerId !== gesture.pid) return;
   e.preventDefault();
   const p = pt(e,art,W,H), it = S.items.find(x => x.id === gesture.id); if(!it) return;
@@ -686,7 +811,10 @@ art.addEventListener('pointermove', e => {
   }
   draw();
 });
-function endGesture(e){ if(!gesture || e.pointerId !== gesture.pid) return; gesture = null; persist(); }
+function endGesture(e){
+  if(bgActive && e.pointerId === bgActive.pid){ bgActive = null; persist(); return; }
+  if(!gesture || e.pointerId !== gesture.pid) return; gesture = null; persist();
+}
 art.addEventListener('pointerup', endGesture);
 art.addEventListener('pointercancel', endGesture);
 art.addEventListener('keydown', e => {
@@ -698,6 +826,7 @@ art.addEventListener('keydown', e => {
 
 function select(id){
   if(selected !== id){ gSel = -1; scope = 'all'; }
+  if(id !== null) bgDraw = false;
   selected = id;
   if(id !== null && view === 'design') dtab = 'edit';
   refresh(); draw();
@@ -757,32 +886,44 @@ async function initRecognizer(){
   } catch (e) { recognizer = null; }
   updateWriteUI();
 }
-async function recognizeNow(){
-  if(!recognizer || !strokes.length) return;
+let detected = [], recogGen = 0;
+// 1文字ぶんの線をよみとって、a〜z の1文字（またはnull）を返す
+async function recognizeStrokes(list){
+  if(!recognizer || !list.length) return null;
   let d = null;
   try {
     d = recognizer.startDrawing({ recognitionType:'text', inputType:'touch', textContext:'', alternatives:8 });
-    const t0 = (strokes[0].points[0] && strokes[0].points[0][2]) || 0;
+    const t0 = (list[0].points[0] && list[0].points[0][2]) || 0;
     let fake = 0;
-    strokes.forEach(s => {
+    list.forEach(s => {
       const hs = new HandwritingStroke();
       s.points.forEach(p => { fake += 8; hs.addPoint({ x:p[0], y:p[1], t:Math.max(0, Math.round(p[2] ? p[2] - t0 : fake)) }); });
       d.addStroke(hs);
     });
     const res = await d.getPrediction();
-    const cand = (res || []).map(r => (r.text || '').trim().toLowerCase()).find(t => /^[a-z]$/.test(t));
-    if(cand && !letterManual && strokes.length){ letter = cand; updateWriteUI(); }
-  } catch (e) { /* よみとれなくても、文字は自分でえらべる */ }
+    return (res || []).map(r => (r.text || '').trim().toLowerCase()).find(t => /^[a-z]$/.test(t)) || null;
+  } catch (e) { return null; }   // よみとれなくても、文字は自分でえらべる
   finally { try { d && d.clear(); } catch (e) {} }
 }
+function boardGroups(){ return editIdx !== null ? [strokes] : splitStrokes(strokes); }
+async function recognizeNow(){
+  if(!recognizer || !strokes.length) return;
+  const gen = ++recogGen, groups = boardGroups();
+  const out = [];
+  for(const g of groups) out.push(await recognizeStrokes(g));
+  if(gen !== recogGen || !strokes.length) return;
+  detected = out;
+  if(groups.length === 1 && out[0] && !letterManual) letter = out[0];
+  updateWriteUI();
+}
 function scheduleRecog(){
-  if(!recognizer || letterManual || !strokes.length) return;
+  if(!recognizer || !strokes.length) return;
   clearTimeout(recogTimer);
   recogTimer = setTimeout(() => { recogPromise = recognizeNow().finally(() => { recogPromise = null; }); }, 450);
 }
 
-$('undoStroke').onclick = () => { strokes.pop(); drawBoard(); scheduleRecog(); };
-$('clearStrokes').onclick = () => { strokes = []; activeStroke = null; activePointer = null; letterManual = false; clearTimeout(recogTimer); drawBoard(); updateWriteUI(); toast('もう一度書けるよ。'); };
+$('undoStroke').onclick = () => { strokes.pop(); recogGen++; detected = []; drawBoard(); updateWriteUI(); scheduleRecog(); };
+$('clearStrokes').onclick = () => { strokes = []; activeStroke = null; activePointer = null; letterManual = false; detected = []; recogGen++; clearTimeout(recogTimer); drawBoard(); updateWriteUI(); toast('もう一度書けるよ。'); };
 $('penWidth').addEventListener('input', e => { penWidth = Number(e.target.value); persist(); });
 
 /* ---- 文字を足す・作品に入れる ---- */
@@ -798,26 +939,52 @@ function curWord(){
   if(view === 'write') return writeWordObj();
   const it = sel(); return it && it.type === 'word' ? it : null;
 }
+let adding = false;
 async function addGlyph(silent){
-  if(recognizer && strokes.length && !letterManual){ clearTimeout(recogTimer); await (recogPromise || recognizeNow()); }
-  const g = makeGlyph();
-  if(!g){ if(!silent) toast('まず4線の上に文字を書いてね。'); return false; }
-  const w = writeWordObj();
-  if(editIdx !== null && w.glyphs[editIdx]){
-    const old = w.glyphs[editIdx];
-    g.font = old.font; w.glyphs[editIdx] = g; editIdx = null;
-    toast('書き直したよ！');
-  } else {
-    w.glyphs.push(g);
-    if(!silent) toast('「' + g.ch + '」を足したよ。つぎの文字も書こう！');
-  }
-  gSel = -1; scope = 'all';
-  strokes = []; activeStroke = null; activePointer = null; letterManual = false;
-  drawBoard(); refresh(); draw(); persist();
-  return true;
+  if(adding) return false;
+  if(!strokes.length){ if(!silent) toast('まず4線の上に文字を書いてね。'); return false; }
+  adding = true;
+  try {
+    clearTimeout(recogTimer); recogGen++;
+    const editing = editIdx !== null;
+    const groups = boardGroups();
+    if(groups.length > 1 && !recognizer){
+      toast('この端末では、文字を自動で分けられないよ。1文字ずつ書いて「足す」を押してね。');
+      return false;
+    }
+    // 文字をきめる：1文字で自分でえらんだときはそれを使い、それ以外はよみとる
+    const chars = [];
+    let unsure = 0;
+    for(const g of groups){
+      let ch = null;
+      if(groups.length === 1 && letterManual) ch = letter;
+      else if(recognizer) ch = await recognizeStrokes(g);
+      if(!ch){ ch = groups.length === 1 ? letter : 'a'; if(groups.length > 1) unsure++; }
+      chars.push(ch);
+    }
+    const w = writeWordObj();
+    const glyphs = groups.map((g,i) => makeGlyphFrom(g, chars[i]));
+    if(editing && w.glyphs[editIdx]){
+      const old = w.glyphs[editIdx];
+      glyphs[0].font = old.font; w.glyphs[editIdx] = glyphs[0]; editIdx = null;
+      if(!silent) toast('書き直したよ！');
+    } else {
+      glyphs.forEach(g => w.glyphs.push(g));
+      if(!silent){
+        toast(glyphs.length > 1
+          ? '「' + chars.join(' ') + '」の' + glyphs.length + '文字を足したよ。' + (unsure ? 'よみとれなかった文字は、一覧で直してね。' : '')
+          : '「' + chars[0] + '」を足したよ。つぎの文字も書こう！');
+      }
+    }
+    if(letterManual === false && groups.length === 1 && chars[0]) letter = chars[0];
+    gSel = -1; scope = 'all';
+    strokes = []; activeStroke = null; activePointer = null; letterManual = false; detected = [];
+    drawBoard(); refresh(); draw(); persist();
+    return true;
+  } finally { adding = false; }
 }
 async function finishWord(){
-  if(strokes.length) await addGlyph(true);
+  if(strokes.length){ const ok = await addGlyph(true); if(!ok) return; }
   if(writeTarget !== null){
     const it = S.items.find(x => x.id === writeTarget);
     if(it){ writeTarget = null; setView('design'); select(it.id); return; }
@@ -910,6 +1077,7 @@ function beginRewrite(){
    ========================================================= */
 function setView(v){
   view = v;
+  if(v !== 'design') bgDraw = false;
   $('writeStage').classList.toggle('hidden', v !== 'write');
   $('designStage').classList.toggle('hidden', v !== 'design');
   $('writePanel').classList.toggle('hidden', v !== 'write');
@@ -931,9 +1099,13 @@ $('designTab').onclick = () => {
 function targets(it){ return (scope === 'one' && gSel >= 0 && it.glyphs[gSel]) ? [it.glyphs[gSel]] : it.glyphs; }
 function updateWriteUI(){
   const auto = !!recognizer;
-  $('curLetterBadge').innerHTML = (auto && !letterManual && strokes.length ? 'よみとった文字' : 'いま書く文字') + '<b>' + letter + '</b>';
-  $('step1').innerHTML = auto ? '<span>1</span>4線に指で書く（文字は自動でよみとるよ）' : '<span>1</span>右で文字をえらぶ';
-  $('step2').innerHTML = auto ? '<span>2</span>まちがっていたら右で直す' : '<span>2</span>4線に指で書く';
+  if(auto && !letterManual && strokes.length && detected.length) $('curLetterBadge').innerHTML = 'よみとった文字<b>' + detected.map(c => c || '?').join(' ') + '</b>';
+  else $('curLetterBadge').innerHTML = (auto && !letterManual && strokes.length ? 'よみとった文字' : 'いま書く文字') + '<b>' + letter + '</b>';
+  $('step1').innerHTML = auto ? '<span>1</span>4線に指で書く（続けて書いてOK）' : '<span>1</span>右で文字をえらぶ';
+  $('step2').innerHTML = auto ? '<span>2</span>文字のあいだは少しあける' : '<span>2</span>4線に指で書く';
+  $('boardNote').textContent = auto
+    ? '名前は続けて書いてOK。文字と文字のあいだを少しあけると、自動で1文字ずつに分かれるよ。'
+    : '1文字書いたら「足す」を押して、つぎの文字を書こう。';
   $('letterHeading').textContent = auto ? '① 4線に書くと、文字をよみとるよ' : '① 書く文字をえらぼう';
   $('letterNote').textContent = auto ? 'まちがっていたら、ここをタップして直してね。（フォントに変えるときに使うよ）' : '書いた文字と同じ文字をえらんでね。（フォントに変えるときに使うよ）';
   document.querySelectorAll('#letterChoices .letter').forEach(b => b.classList.toggle('chosen', b.dataset.letter === letter));
@@ -941,7 +1113,7 @@ function updateWriteUI(){
   $('penWidth').value = penWidth;
   const editing = editIdx !== null;
   $('cancelEdit').classList.toggle('hidden', !editing);
-  $('addLetter').textContent = editing ? '✓ 書き直した文字を入れる' : '＋ この文字を足す';
+  $('addLetter').textContent = editing ? '✓ 書き直した文字を入れる' : '＋ 文字を足す';
   const t = writeTarget !== null && S.items.find(x => x.id === writeTarget);
   $('writeModeNote').textContent = t ? '作品の文字列に足しているよ。足すと、すぐ作品に入るよ。' : '新しい文字列を作っているよ。名前なら、1文字ずつ足していこう。';
 }
@@ -977,7 +1149,25 @@ function updateTabs(){
     $('sec-' + k).classList.toggle('hidden', dtab !== k);
   });
   document.querySelectorAll('[data-bg]').forEach(b => b.classList.toggle('selected', b.dataset.bg === S.bgType));
-  document.querySelectorAll('#bgColors .swatch').forEach(b => b.classList.toggle('chosen', b.dataset.color === S.bgColor));
+  const grad = S.bgType === 'gradient';
+  $('bgTargetBox').classList.toggle('hidden', !grad);
+  $('bgTargetA').classList.toggle('active', bgTarget !== 'b');
+  $('bgTargetB').classList.toggle('active', bgTarget === 'b');
+  const curBg = (grad && bgTarget === 'b') ? (S.bgColor2 || mix(S.bgColor,'#ffffff',.8)) : S.bgColor;
+  document.querySelectorAll('#bgColors .swatch').forEach(b => b.classList.toggle('chosen', b.dataset.color === curBg));
+  // 背景に絵をかく
+  art.classList.toggle('drawing', bgDraw);
+  $('bgDrawBox').classList.toggle('hidden', !bgDraw);
+  $('bgDrawBtn').textContent = bgDraw ? '✓ 絵をかきおわる' : '✏️ 背景に絵をかく';
+  $('bgDrawBtn').classList.toggle('go', bgDraw); $('bgDrawBtn').classList.toggle('primary', !bgDraw);
+  $('bgPenMode').classList.toggle('active', !bgEraser);
+  $('bgEraserMode').classList.toggle('active', bgEraser);
+  $('bgPenWidth').value = bgPenWidth;
+  document.querySelectorAll('#bgPenColors .swatch').forEach(b => b.classList.toggle('chosen', !bgEraser && b.dataset.color === bgPenColor));
+  $('bgUndo').disabled = !S.bgStrokes.length; $('bgClear').disabled = !S.bgStrokes.length;
+  $('stageTip').textContent = bgDraw
+    ? '背景に、ゆびで絵をかこう。かきおわったら「絵をかきおわる」を押してね。'
+    : '文字や図形をタップして動かそう。右下の丸で大きさ、上の丸で向きが変えられるよ。';
   $('guidesBtn').textContent = S.guides ? '📏 4線を隠す' : '📏 4線を表示';
   $('guidesBtn').classList.toggle('active', S.guides);
   $('workTitle').textContent = TITLES[S.kind];
@@ -987,7 +1177,31 @@ function refresh(){
   if(view === 'write') renderStrip($('stripWrite'));
   if(view === 'design'){ refreshEdit(); updateTabs(); }
 }
-['edit','tpl','bg','deco'].forEach(k => { $('tab-' + k).onclick = () => { dtab = k; updateTabs(); }; });
+['edit','tpl','bg','deco'].forEach(k => { $('tab-' + k).onclick = () => { dtab = k; if(k !== 'bg') bgDraw = false; updateTabs(); }; });
+
+/* ---- 背景の色・背景の絵 ---- */
+function setBgColor(c){
+  if(S.bgType === 'gradient' && bgTarget === 'b') S.bgColor2 = c;
+  else { S.bgColor = c; if(S.bgType === 'white' || S.bgType === 'black') S.bgType = 'solid'; }
+  refresh(); draw(); persist();
+}
+function customBgColor(){ setBgColor(hslToHex(Number($('bgHue').value), 72, Number($('bgLight').value))); }
+$('bgHue').addEventListener('input', customBgColor);
+$('bgLight').addEventListener('input', customBgColor);
+$('bgTargetA').onclick = () => { bgTarget = 'a'; updateTabs(); };
+$('bgTargetB').onclick = () => { bgTarget = 'b'; updateTabs(); };
+$('bgDrawBtn').onclick = () => {
+  bgDraw = !bgDraw;
+  if(bgDraw){ selected = null; gSel = -1; scope = 'all'; }
+  refresh(); draw();
+};
+$('bgPenMode').onclick = () => { bgEraser = false; updateTabs(); };
+$('bgEraserMode').onclick = () => { bgEraser = true; updateTabs(); };
+$('bgPenWidth').addEventListener('input', e => { bgPenWidth = Number(e.target.value); });
+$('bgUndo').onclick = () => { S.bgStrokes.pop(); bgDirty = true; updateTabs(); draw(); persist(); };
+$('bgClear').onclick = () => {
+  askConfirm('背景の絵を全部消す？','背景にかいた絵が全部消えます。文字やかざりは消えません。','全部消す',() => { S.bgStrokes = []; bgDirty = true; updateTabs(); draw(); persist(); toast('背景の絵を消したよ。'); });
+};
 
 $('scopeAll').onclick = () => { scope = 'all'; gSel = -1; refresh(); draw(); };
 $('scopeOne').onclick = () => { const it = sel(); if(!it || it.type !== 'word') return; scope = 'one'; if(gSel < 0) gSel = 0; refresh(); draw(); };
@@ -1037,7 +1251,7 @@ $('bringBackBtn').onclick = () => {
    背景・テンプレート・かざり
    ========================================================= */
 function applyTemplate(t){
-  S.bgType = t.bg; S.bgColor = t.bgColor;
+  S.bgType = t.bg; S.bgColor = t.bgColor; S.bgColor2 = null; bgTarget = 'a';
   S.items = S.items.filter(i => !i.templateDeco);
   S.items.filter(i => i.type === 'word').forEach(w => w.glyphs.forEach((g,i) => {
     g.color = Array.isArray(t.text) ? t.text[i % t.text.length] : t.text; g.font = t.font;
@@ -1101,8 +1315,13 @@ function buildUI(){
   });
   BG_COLORS.forEach(color => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch'; b.style.background = color; b.dataset.color = color; b.setAttribute('aria-label','背景の色');
-    b.onclick = () => { S.bgColor = color; if(S.bgType === 'white' || S.bgType === 'black') S.bgType = 'solid'; refresh(); draw(); persist(); };
+    b.onclick = () => setBgColor(color);
     $('bgColors').appendChild(b);
+  });
+  COLORS.forEach(color => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch'; b.style.background = color; b.dataset.color = color; b.setAttribute('aria-label','絵の色');
+    b.onclick = () => { bgPenColor = color; bgEraser = false; updateTabs(); };
+    $('bgPenColors').appendChild(b);
   });
   TEMPLATES.forEach(tp => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'tile';
@@ -1145,9 +1364,10 @@ function setKind(k){
   art.width = W * SS; art.height = H * SS;
   fitCanvas();
 }
-function hasWork(){ return S.items.length > 0 || S.draft.length > 0 || strokes.length > 0; }
+function hasWork(){ return S.items.length > 0 || S.draft.length > 0 || strokes.length > 0 || S.bgStrokes.length > 0; }
 function fresh(kind){
-  S = { kind, bgType:'white', bgColor:'#ffe3b3', guides:false, items:[], nextId:1, draft:[] };
+  S = { kind, bgType:'white', bgColor:'#ffe3b3', bgColor2:null, bgStrokes:[], guides:false, items:[], nextId:1, draft:[] };
+  bgDirty = true; bgDraw = false; bgActive = null; bgTarget = 'a';
   selected = null; strokes = []; activeStroke = null; activePointer = null; writeTarget = null; editIdx = null; gSel = -1; scope = 'all'; dtab = 'tpl';
   setKind(kind); setView('write'); persist();
 }
@@ -1175,9 +1395,9 @@ $('confirmDialog').addEventListener('click', e => { if(e.target === $('confirmDi
 window.addEventListener('keydown', e => { if(e.key === 'Escape'){ $('confirmDialog').classList.add('hidden'); $('kindDialog').classList.add('hidden'); } });
 
 $('saveBtn').onclick = () => {
-  if(!S.items.length){ toast('まだ作品に何も入っていないよ。「作品に入れる」を押してね。'); return; }
+  if(!S.items.length && !S.bgStrokes.length){ toast('まだ作品に何も入っていないよ。「作品に入れる」を押してね。'); return; }
   const out = document.createElement('canvas'); out.width = W * EXPORT; out.height = H * EXPORT;
-  const c = out.getContext('2d'); c.scale(EXPORT,EXPORT); paintScene(c);
+  const c = out.getContext('2d'); c.scale(EXPORT,EXPORT); paintScene(c, buildBgLayer(EXPORT));
   out.toBlob(blob => {
     if(!blob){ toast('画像を作れませんでした。もう一度ためしてね。'); return; }
     const url = URL.createObjectURL(blob), a = document.createElement('a');
