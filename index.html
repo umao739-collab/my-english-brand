@@ -95,6 +95,10 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
 .font-choice small{font-family:'Zen Maru Gothic',sans-serif;font-size:12px;color:var(--soft);font-weight:700}
 .font-choice.selected{border-color:#ff8a5c;box-shadow:0 0 0 3px #ffd0b8}
 .seg{display:flex;gap:6px}
+details.pen-box summary{cursor:pointer;font-weight:900;font-size:15px;min-height:44px;display:flex;align-items:center;list-style:none}
+details.pen-box summary::-webkit-details-marker{display:none}
+details.pen-box summary::before{content:'▸';margin-right:8px;display:inline-block;transition:transform .15s}
+details.pen-box[open] summary::before{transform:rotate(90deg)}
 .seg .btn{flex:1}
 
 /* ---- dialogs ---- */
@@ -123,7 +127,6 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
    <button id="writeTab" class="btn active" type="button">✏️ 文字を書く</button>
    <button id="designTab" class="btn" type="button">🎨 デザインする</button>
    <button id="saveBtn" class="btn primary" type="button">⬇️ 作品を保存</button>
-   <button id="resetBtn" class="btn" type="button">↺ 最初から</button>
   </nav>
  </header>
 
@@ -136,10 +139,9 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
      <div class="badge" id="curLetterBadge">いま書く文字<b>a</b></div>
     </div>
     <ol class="steps">
-     <li id="step1"><span>1</span>右で文字をえらぶ</li>
-     <li id="step2"><span>2</span>4線に指で書く</li>
-     <li><span>3</span>「文字を足す」をおす</li>
-     <li><span>4</span>書けたら「作品に入れる」</li>
+     <li><span>1</span>右で文字をえらんで、なぞる</li>
+     <li><span>2</span>つぎの文字も同じように</li>
+     <li><span>3</span>書けたら「作品に入れる」</li>
     </ol>
     <div class="board-frame"><canvas id="writingBoard" width="1800" height="640" tabindex="0" aria-label="4線の手書きエリア"></canvas></div>
     <p id="boardNote" class="note" style="text-align:center;margin-top:10px"></p>
@@ -147,7 +149,6 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
      <button id="undoStroke" type="button" class="btn">↶ 1画もどす</button>
      <button id="clearStrokes" type="button" class="btn">🧽 消して書き直す</button>
      <button id="cancelEdit" type="button" class="btn hidden">書き直しをやめる</button>
-     <button id="addLetter" type="button" class="btn big primary">＋ 文字を足す</button>
      <button id="finishWord" type="button" class="btn big go">✓ 作品に入れる</button>
     </div>
    </div>
@@ -169,17 +170,18 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
   <aside class="panel" aria-label="編集パネル">
    <!-- 書くときのパネル -->
    <section id="writePanel">
-    <h2 id="letterHeading">① 書く文字をえらぼう</h2>
+    <h2 id="letterHeading">文字をえらぶと、なぞれるよ</h2>
+    <div class="seg" style="margin-bottom:10px">
+     <button id="caseLower" class="btn small" type="button">a 小文字</button>
+     <button id="caseUpper" class="btn small" type="button">A 大文字</button>
+    </div>
     <div id="letterChoices" class="letters"></div>
-    <p id="letterNote" class="note">書いた文字と同じ文字をえらんでね。（フォントに変えるときに使うよ）</p>
-    <div class="panel-section">
-     <h3>ペンの太さ</h3>
-     <input id="penWidth" type="range" min="3" max="22" value="8" aria-label="ペンの太さ">
-    </div>
-    <div class="panel-section">
-     <h3>ペンの色</h3>
+    <p id="letterNote" class="note"></p>
+    <details class="panel-section pen-box">
+     <summary>🖍 ペンの太さ・色をかえる</summary>
+     <div class="field"><label for="penWidth">太さ</label><input id="penWidth" type="range" min="3" max="22" value="8" aria-label="ペンの太さ"></div>
      <div id="penColors" class="swatches"></div>
-    </div>
+    </details>
     <div class="panel-section">
      <h3>書いた文字</h3>
      <p id="writeModeNote" class="note"></p>
@@ -250,7 +252,7 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
       <div id="wordBox">
        <h2>文字のならび</h2>
        <div id="stripDesign"></div>
-       <button id="addMore" type="button" class="btn wide small">＋ この文字列に文字を足す</button>
+       <button id="addMore" type="button" class="btn wide small">＋ 文字をつけたす</button>
        <div class="panel-section">
         <h3>どれを変える？</h3>
         <div class="seg">
@@ -380,6 +382,10 @@ let S = { kind:'card', bgType:'white', bgColor:'#ffe3b3', bgColor2:null, bgStrok
 // 背景の絵・色づくり用の状態
 let bgDraw = false, bgActive = null, bgEraser = false, bgPenColor = '#ff6b4a', bgPenWidth = 14, bgTarget = 'a';
 let bgLayer = null, bgDirty = true;
+// 文字をえらぶ・なぞる
+let caseMode = 'lower', guideCh = null;
+const LOWER = 'abcdefghijklmnopqrstuvwxyz', UPPER = LOWER.toUpperCase();
+const isUpper = ch => ch >= 'A' && ch <= 'Z';
 let W = 900, H = 520;
 let view = 'write';
 let selected = null;
@@ -466,6 +472,80 @@ function fourLines(c,x0,x1,alpha){
     c.strokeStyle = i === 2 ? '#f2967a' : '#9ccbe6';
     c.lineWidth = i === 2 ? 3 : 2.2;
     c.moveTo(x0,y); c.lineTo(x1,y); c.stroke();
+  });
+  c.restore();
+}
+/* なぞり書き用の見本（4線の単位：上の線=0、点線=1、基本線=2、下の線=3。x は左はし=0）。
+   s = 書き順どおりの線（SVGのパス）、w = 文字のはば */
+const TRACE = {
+  a:{w:1.0,s:['M0.85 1.15 A0.5 0.5 0 1 0 0.85 1.85','M1 1 L1 2']},
+  b:{w:1.0,s:['M0 0 L0 2','M0 1.5 A0.5 0.5 0 0 1 1 1.5 A0.5 0.5 0 0 1 0 1.5']},
+  c:{w:0.9,s:['M0.88 1.18 A0.5 0.5 0 1 0 0.88 1.82']},
+  d:{w:1.0,s:['M0.85 1.15 A0.5 0.5 0 1 0 0.85 1.85','M1 0 L1 2']},
+  e:{w:1.0,s:['M0.02 1.5 L1 1.5 A0.5 0.5 0 1 0 0.88 1.82']},
+  f:{w:0.9,s:['M0.85 0.3 C0.75 0.05 0.4 0 0.4 0.45 L0.4 2','M0 1 L0.8 1']},
+  g:{w:1.0,s:['M0.85 1.15 A0.5 0.5 0 1 0 0.85 1.85','M1 1 L1 2.3 C1 2.95 0.5 3.1 0.1 2.85']},
+  h:{w:0.95,s:['M0 0 L0 2','M0 1.55 C0.15 1.1 0.9 0.9 0.95 1.5 L0.95 2']},
+  i:{w:0.2,s:['M0.1 1 L0.1 2','M0.1 0.5 L0.1 0.51']},
+  j:{w:0.6,s:['M0.5 1 L0.5 2.4 C0.5 2.95 0.3 3.05 0.05 2.85','M0.5 0.5 L0.5 0.51']},
+  k:{w:0.95,s:['M0 0 L0 2','M0.8 1 L0.05 1.6 L0.85 2']},
+  l:{w:0.2,s:['M0.1 0 L0.1 2']},
+  m:{w:1.1,s:['M0 1 L0 2','M0 1.45 C0.05 1 0.55 1 0.55 1.5 L0.55 2','M0.55 1.45 C0.6 1 1.1 1 1.1 1.5 L1.1 2']},
+  n:{w:0.8,s:['M0 1 L0 2','M0 1.45 C0.05 1 0.8 1 0.8 1.5 L0.8 2']},
+  o:{w:1.0,s:['M0.5 1 A0.5 0.5 0 0 0 0.5 2 A0.5 0.5 0 0 0 0.5 1']},
+  p:{w:1.0,s:['M0 1 L0 3','M0 1.5 A0.5 0.5 0 0 1 1 1.5 A0.5 0.5 0 0 1 0 1.5']},
+  q:{w:1.0,s:['M0.85 1.15 A0.5 0.5 0 1 0 0.85 1.85','M1 1 L1 3']},
+  r:{w:0.8,s:['M0 1 L0 2','M0 1.5 C0.1 1.1 0.5 1 0.75 1.15']},
+  s:{w:0.9,s:['M0.85 1.2 C0.7 0.95 0.15 0.95 0.15 1.3 C0.15 1.7 0.85 1.35 0.85 1.75 C0.85 2.1 0.2 2.1 0.1 1.8']},
+  t:{w:0.8,s:['M0.3 0.4 L0.3 1.8 C0.3 2 0.5 2.05 0.8 1.95','M0 1 L0.7 1']},
+  u:{w:0.8,s:['M0 1 L0 1.5 C0 2.05 0.8 2.05 0.8 1.5','M0.8 1 L0.8 2']},
+  v:{w:0.9,s:['M0 1 L0.45 2 L0.9 1']},
+  w:{w:1.3,s:['M0 1 L0.3 2 L0.65 1.2 L1 2 L1.3 1']},
+  x:{w:0.9,s:['M0 1 L0.9 2','M0.9 1 L0 2']},
+  y:{w:0.9,s:['M0 1 L0.4 2','M0.85 1 L0.35 2.5 C0.25 2.8 0.1 3 0 3']},
+  z:{w:0.8,s:['M0 1 L0.8 1 L0 2 L0.8 2']},
+  A:{w:1.2,s:['M0.6 0 L0 2','M0.6 0 L1.2 2','M0.25 1.4 L0.95 1.4']},
+  B:{w:1.0,s:['M0 0 L0 2','M0 0 L0.5 0 C1 0 1 1.05 0.5 1.05 L0 1.05','M0.5 1.05 C1.1 1.05 1.1 2 0.5 2 L0 2']},
+  C:{w:1.0,s:['M0.9 0.23 A0.55 1 0 1 0 0.9 1.77']},
+  D:{w:1.0,s:['M0 0 L0 2','M0 0 L0.35 0 C1.05 0 1.05 2 0.35 2 L0 2']},
+  E:{w:0.9,s:['M0 0 L0 2','M0 0 L0.9 0','M0 1 L0.7 1','M0 2 L0.9 2']},
+  F:{w:0.9,s:['M0 0 L0 2','M0 0 L0.9 0','M0 1 L0.7 1']},
+  G:{w:1.1,s:['M0.9 0.23 A0.55 1 0 1 0 1.09 1.09 L0.62 1.09']},
+  H:{w:1.0,s:['M0 0 L0 2','M1 0 L1 2','M0 1 L1 1']},
+  I:{w:0.2,s:['M0.1 0 L0.1 2']},
+  J:{w:0.8,s:['M0.7 0 L0.7 1.45 C0.7 2.1 0.1 2.1 0 1.6']},
+  K:{w:0.95,s:['M0 0 L0 2','M0.9 0 L0 1.15','M0.3 0.85 L0.95 2']},
+  L:{w:0.8,s:['M0 0 L0 2','M0 2 L0.8 2']},
+  M:{w:1.3,s:['M0 2 L0 0','M0 0 L0.65 1.5','M0.65 1.5 L1.3 0','M1.3 0 L1.3 2']},
+  N:{w:1.0,s:['M0 2 L0 0','M0 0 L1 2','M1 2 L1 0']},
+  O:{w:1.1,s:['M0.55 0 A0.55 1 0 0 0 0.55 2 A0.55 1 0 0 0 0.55 0']},
+  P:{w:0.95,s:['M0 0 L0 2','M0 0 L0.5 0 C1 0 1 1.05 0.5 1.05 L0 1.05']},
+  Q:{w:1.1,s:['M0.55 0 A0.55 1 0 0 0 0.55 2 A0.55 1 0 0 0 0.55 0','M0.7 1.4 L1.1 2.15']},
+  R:{w:1.0,s:['M0 0 L0 2','M0 0 L0.5 0 C1 0 1 1.05 0.5 1.05 L0 1.05','M0.5 1.05 L1 2']},
+  S:{w:1.0,s:['M0.95 0.35 C0.8 -0.05 0.1 -0.05 0.1 0.45 C0.1 1 0.95 0.95 0.95 1.55 C0.95 2.1 0.15 2.1 0.05 1.6']},
+  T:{w:1.0,s:['M0 0 L1 0','M0.5 0 L0.5 2']},
+  U:{w:0.95,s:['M0 0 L0 1.3 C0 2.1 0.95 2.1 0.95 1.3 L0.95 0']},
+  V:{w:1.1,s:['M0 0 L0.55 2 L1.1 0']},
+  W:{w:1.6,s:['M0 0 L0.35 2 L0.8 0.5 L1.25 2 L1.6 0']},
+  X:{w:1.0,s:['M0 0 L1 2','M1 0 L0 2']},
+  Y:{w:1.0,s:['M0 0 L0.5 1.05','M1 0 L0.5 1.05','M0.5 1.05 L0.5 2']},
+  Z:{w:0.95,s:['M0 0 L0.95 0 L0 2 L0.95 2']}
+};
+
+/* なぞり書きの見本と、書き始めの印（番号は書き順） */
+function drawTrace(c,ch){
+  const g = TRACE[ch]; if(!g) return;
+  c.save(); c.translate((BW - g.w * GAP) / 2, LINES[0]);
+  c.save(); c.scale(GAP,GAP); c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#ecd5b3'; c.lineWidth = 16 / GAP;
+  g.s.forEach(d => c.stroke(new Path2D(d))); c.restore();
+  const placed = [];
+  g.s.forEach((d,i) => {
+    const m = /M\s*(-?[\d.]+)[ ,]+(-?[\d.]+)/.exec(d); if(!m) return;
+    let px = m[1] * GAP, py = m[2] * GAP;
+    if(placed.some(q => Math.hypot(q[0] - px, q[1] - py) < 16)) px += 14;   // 印が重ならないようにずらす
+    placed.push([px,py]);
+    c.beginPath(); c.fillStyle = '#ff8a5c'; c.arc(px,py,11,0,Math.PI*2); c.fill();
+    c.fillStyle = '#fff'; c.font = '700 14px "Zen Maru Gothic",sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(i + 1), px, py + 1);
   });
   c.restore();
 }
@@ -823,6 +903,7 @@ function drawBoard(){
   wc.fillStyle = '#fffefb'; wc.fillRect(0,0,BW,BH);
   wc.fillStyle = '#fff6e6'; wc.fillRect(0,LINES[1],BW,LINES[2]-LINES[1]);
   fourLines(wc,0,BW,1);
+  if(guideCh) drawTrace(wc,guideCh);
   strokes.forEach(s => strokePath(wc,s,s.color,s.width));
   if(activeStroke) strokePath(wc,activeStroke,activeStroke.color,activeStroke.width);
 }
@@ -869,7 +950,15 @@ async function initRecognizer(){
   updateWriteUI();
 }
 let detected = [], recogGen = 0;
-// 1文字ぶんの線をよみとって、a〜z の1文字（またはnull）を返す
+// 形では大文字・小文字を見分けにくい文字は、書いた高さ（上の線まで届いているか）で決める
+const CASE_BY_HEIGHT = 'copsuvwxyz';
+function fixCase(t, list){
+  const low = t.toLowerCase();
+  if(!CASE_BY_HEIGHT.includes(low)) return t;
+  let top = 1e9; list.forEach(s => s.points.forEach(p => { top = Math.min(top, p[1]); }));
+  return top < (LINES[0] + LINES[1]) / 2 ? low.toUpperCase() : low;
+}
+// 1文字ぶんの線をよみとって、英字1文字（またはnull）を返す
 async function recognizeStrokes(list){
   if(!recognizer || !list.length) return null;
   let d = null;
@@ -883,7 +972,8 @@ async function recognizeStrokes(list){
       d.addStroke(hs);
     });
     const res = await d.getPrediction();
-    return (res || []).map(r => (r.text || '').trim().toLowerCase()).find(t => /^[a-z]$/.test(t)) || null;
+    const t = (res || []).map(r => (r.text || '').trim()).find(t => /^[A-Za-z]$/.test(t));
+    return t ? fixCase(t, list) : null;
   } catch (e) { return null; }   // よみとれなくても、文字は自分でえらべる
   finally { try { d && d.clear(); } catch (e) {} }
 }
@@ -899,13 +989,13 @@ async function recognizeNow(){
   updateWriteUI();
 }
 function scheduleRecog(){
-  if(!recognizer || !strokes.length) return;
+  if(!recognizer || letterManual || !strokes.length) return;
   clearTimeout(recogTimer);
   recogTimer = setTimeout(() => { recogPromise = recognizeNow().finally(() => { recogPromise = null; }); }, 450);
 }
 
 $('undoStroke').onclick = () => { strokes.pop(); recogGen++; detected = []; drawBoard(); updateWriteUI(); scheduleRecog(); };
-$('clearStrokes').onclick = () => { strokes = []; activeStroke = null; activePointer = null; letterManual = false; detected = []; recogGen++; clearTimeout(recogTimer); drawBoard(); updateWriteUI(); toast('もう一度書けるよ。'); };
+$('clearStrokes').onclick = () => { strokes = []; activeStroke = null; activePointer = null; letterManual = !!guideCh; detected = []; recogGen++; clearTimeout(recogTimer); drawBoard(); updateWriteUI(); toast('もう一度書けるよ。'); };
 $('penWidth').addEventListener('input', e => { penWidth = Number(e.target.value); persist(); });
 
 /* ---- 文字を足す・作品に入れる ---- */
@@ -925,13 +1015,14 @@ let adding = false;
 async function addGlyph(silent){
   if(adding) return false;
   if(!strokes.length){ if(!silent) toast('まず4線の上に文字を書いてね。'); return false; }
+  if(!recognizer && !letterManual){ toast('先に右で文字をえらんで、うすい見本をなぞってね。'); return false; }
   adding = true;
   try {
     clearTimeout(recogTimer); recogGen++;
     const editing = editIdx !== null;
     const groups = boardGroups();
     if(groups.length > 1 && !recognizer){
-      toast('この端末では、文字を自動で分けられないよ。1文字ずつ書いて「足す」を押してね。');
+      toast('この端末では、文字を自動で分けられないよ。1文字ずつ、文字をえらんで書いてね。');
       return false;
     }
     // 文字をきめる：1文字で自分でえらんだときはそれを使い、それ以外はよみとる
@@ -941,7 +1032,10 @@ async function addGlyph(silent){
       let ch = null;
       if(groups.length === 1 && letterManual) ch = letter;
       else if(recognizer) ch = await recognizeStrokes(g);
-      if(!ch){ ch = groups.length === 1 ? letter : 'a'; if(groups.length > 1) unsure++; }
+      if(!ch){
+        if(groups.length === 1){ toast('どの文字かわからなかったよ。右で文字をえらんでね。'); return false; }
+        ch = 'a'; unsure++;
+      }
       chars.push(ch);
     }
     const w = writeWordObj();
@@ -954,11 +1048,12 @@ async function addGlyph(silent){
       glyphs.forEach(g => w.glyphs.push(g));
       if(!silent){
         toast(glyphs.length > 1
-          ? '「' + chars.join(' ') + '」の' + glyphs.length + '文字を足したよ。' + (unsure ? 'よみとれなかった文字は、一覧で直してね。' : '')
-          : '「' + chars[0] + '」を足したよ。つぎの文字も書こう！');
+          ? '「' + chars.join(' ') + '」の' + glyphs.length + '文字ができたよ。' + (unsure ? 'よみとれなかった文字は、一覧で直してね。' : '')
+          : '「' + chars[0] + '」ができたよ。つぎの文字も書こう！');
       }
     }
-    if(letterManual === false && groups.length === 1 && chars[0]) letter = chars[0];
+    if(groups.length === 1 && chars[0]) letter = chars[0];
+    guideCh = null;
     gSel = -1; scope = 'all';
     strokes = []; activeStroke = null; activePointer = null; letterManual = false; detected = [];
     drawBoard(); refresh(); draw(); persist();
@@ -966,7 +1061,10 @@ async function addGlyph(silent){
   } finally { adding = false; }
 }
 async function finishWord(){
+  const wasEditing = editIdx !== null;
+  if(wasEditing && !strokes.length){ toast('書き直す文字を4線に書いてね。（やめるときは「書き直しをやめる」）'); return; }
   if(strokes.length){ const ok = await addGlyph(true); if(!ok) return; }
+  if(wasEditing && writeTarget === null){ toast('書き直したよ！'); return; }
   if(writeTarget !== null){
     const it = S.items.find(x => x.id === writeTarget);
     if(it){ writeTarget = null; setView('design'); select(it.id); return; }
@@ -978,7 +1076,6 @@ async function finishWord(){
   setView('design'); select(it.id); persist();
   toast('作品に入れたよ！ドラッグして動かしてみよう。');
 }
-$('addLetter').onclick = () => addGlyph(false);
 $('finishWord').onclick = finishWord;
 $('cancelEdit').onclick = () => { editIdx = null; strokes = []; drawBoard(); refresh(); toast('書き直しをやめたよ。'); };
 
@@ -1015,8 +1112,12 @@ function renderStrip(el){
   if(gSel < 0){ const p = document.createElement('p'); p.className = 'note'; p.textContent = '文字をタップすると、順番を変えたり書き直したりできるよ。'; el.appendChild(p); }
   else if(w.glyphs[gSel]){
     const p = document.createElement('p'); p.className = 'note'; p.textContent = 'この文字は何？（まちがっていたら、タップして直そう）'; el.appendChild(p);
+    const flip = document.createElement('button'); flip.type = 'button'; flip.className = 'btn small wide'; flip.style.marginBottom = '8px';
+    flip.textContent = 'Aa 大文字 ⇄ 小文字';
+    flip.onclick = () => { const g = w.glyphs[gSel]; g.ch = isUpper(g.ch) ? g.ch.toLowerCase() : g.ch.toUpperCase(); refresh(); draw(); persist(); };
+    el.appendChild(flip);
     const grid = document.createElement('div'); grid.className = 'letters';
-    'abcdefghijklmnopqrstuvwxyz'.split('').forEach(ch => {
+    (isUpper(w.glyphs[gSel].ch) ? UPPER : LOWER).split('').forEach(ch => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'letter' + (ch === w.glyphs[gSel].ch ? ' chosen' : ''); b.textContent = ch;
       b.setAttribute('aria-label', ch + ' に直す');
       b.onclick = () => { w.glyphs[gSel].ch = ch; refresh(); draw(); persist(); };
@@ -1046,7 +1147,8 @@ function beginRewrite(){
   if(!w || gSel < 0 || !w.glyphs[gSel]){ toast('書き直す文字を、一覧からえらんでね。'); return; }
   const g = w.glyphs[gSel];
   if(view === 'design') writeTarget = w.id;
-  editIdx = gSel; letter = g.ch; letterManual = true;
+  editIdx = gSel; letter = g.ch; letterManual = true; guideCh = null;
+  caseMode = isUpper(g.ch) ? 'upper' : 'lower'; buildLetters();
   const dx = (BW - g.w) / 2;
   strokes = g.strokes.map(s => ({ color:g.color || s.color, width:s.width, points:s.points.map(p => [p[0] + dx, p[1], p[2] || 0]) }));
   activeStroke = null; activePointer = null;
@@ -1081,23 +1183,23 @@ $('designTab').onclick = () => {
 function targets(it){ return (scope === 'one' && gSel >= 0 && it.glyphs[gSel]) ? [it.glyphs[gSel]] : it.glyphs; }
 function updateWriteUI(){
   const auto = !!recognizer;
-  if(auto && !letterManual && strokes.length && detected.length) $('curLetterBadge').innerHTML = 'よみとった文字<b>' + detected.map(c => c || '?').join(' ') + '</b>';
-  else $('curLetterBadge').innerHTML = (auto && !letterManual && strokes.length ? 'よみとった文字' : 'いま書く文字') + '<b>' + letter + '</b>';
-  $('step1').innerHTML = auto ? '<span>1</span>4線に指で書く（続けて書いてOK）' : '<span>1</span>右で文字をえらぶ';
-  $('step2').innerHTML = auto ? '<span>2</span>文字のあいだは少しあける' : '<span>2</span>4線に指で書く';
-  $('boardNote').textContent = auto
-    ? '名前は続けて書いてOK。文字と文字のあいだを少しあけると、自動で1文字ずつに分かれるよ。'
-    : '1文字書いたら「足す」を押して、つぎの文字を書こう。';
-  $('letterHeading').textContent = auto ? '① 4線に書くと、文字をよみとるよ' : '① 書く文字をえらぼう';
-  $('letterNote').textContent = auto ? 'まちがっていたら、ここをタップして直してね。（フォントに変えるときに使うよ）' : '書いた文字と同じ文字をえらんでね。（フォントに変えるときに使うよ）';
-  document.querySelectorAll('#letterChoices .letter').forEach(b => b.classList.toggle('chosen', b.dataset.letter === letter));
+  if(guideCh) $('curLetterBadge').innerHTML = 'なぞる文字<b>' + guideCh + '</b>';
+  else if(auto && strokes.length && detected.length) $('curLetterBadge').innerHTML = 'よみとった文字<b>' + detected.map(c => c || '?').join(' ') + '</b>';
+  else $('curLetterBadge').innerHTML = auto ? 'じゆうに書いてもOK' : '文字をえらぼう';
+  $('boardNote').textContent = guideCh
+    ? 'うすい見本をなぞって書こう。オレンジの数字は、書きはじめの場所と順番だよ。'
+    : (auto ? '右で文字をえらぶと、4線の上に見本が出るよ。見本なしで、名前を続けて書いてもOK。' : '右で文字をえらぶと、4線の上に見本が出るよ。なぞって書こう。');
+  $('letterNote').textContent = 'もういちど同じ文字を押すと、見本が消えるよ。';
+  $('caseLower').classList.toggle('active', caseMode === 'lower');
+  $('caseUpper').classList.toggle('active', caseMode === 'upper');
+  document.querySelectorAll('#letterChoices .letter').forEach(b => b.classList.toggle('chosen', b.dataset.letter === guideCh));
   document.querySelectorAll('#penColors .swatch').forEach(b => b.classList.toggle('chosen', b.dataset.color === penColor));
   $('penWidth').value = penWidth;
   const editing = editIdx !== null;
   $('cancelEdit').classList.toggle('hidden', !editing);
-  $('addLetter').textContent = editing ? '✓ 書き直した文字を入れる' : '＋ 文字を足す';
+  $('finishWord').textContent = editing ? '✓ 書き直した文字を入れる' : '✓ 作品に入れる';
   const t = writeTarget !== null && S.items.find(x => x.id === writeTarget);
-  $('writeModeNote').textContent = t ? '作品の文字列に足しているよ。足すと、すぐ作品に入るよ。' : '新しい文字列を作っているよ。名前なら、1文字ずつ足していこう。';
+  $('writeModeNote').textContent = t ? '作品の文字列に足しているよ。文字を書いたら、「作品に入れる」を押してね。' : '名前を作っているよ。1文字ずつ書いていこう。';
 }
 function refreshEdit(){
   const it = sel();
@@ -1258,14 +1360,36 @@ function miniShape(key,color){
 /* =========================================================
    UI部品を組み立てる
    ========================================================= */
-function buildUI(){
-  const lc = $('letterChoices');
-  'abcdefghijklmnopqrstuvwxyz'.split('').forEach(ch => {
+function buildLetters(){
+  const lc = $('letterChoices'); lc.innerHTML = '';
+  (caseMode === 'upper' ? UPPER : LOWER).split('').forEach(ch => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'letter'; b.textContent = ch; b.dataset.letter = ch;
-    b.setAttribute('aria-label', ch + ' をえらぶ');
-    b.onclick = () => { letter = ch; letterManual = true; updateWriteUI(); persist(); };
+    b.setAttribute('aria-label', ch + ' をなぞる');
+    b.onclick = () => onLetterTap(ch);
     lc.appendChild(b);
   });
+}
+// 文字ボタン：4線の上に見本を出す。書きかけの文字があれば、先にその文字を確定する
+async function onLetterTap(ch){
+  if(adding) return;
+  if(editIdx === null && strokes.length && ch !== guideCh){
+    const ok = await addGlyph(false);
+    if(!ok) return;
+  }
+  if(ch === guideCh && !strokes.length){ guideCh = null; letterManual = false; }          // もういちど押すと見本が消える
+  else if(ch !== guideCh || !strokes.length){ guideCh = ch; letter = ch; letterManual = true; }
+  caseMode = isUpper(ch) ? 'upper' : 'lower'; buildLetters();
+  drawBoard(); updateWriteUI(); persist();
+}
+function setCase(m){
+  caseMode = m;
+  if(guideCh && !strokes.length){ guideCh = m === 'upper' ? guideCh.toUpperCase() : guideCh.toLowerCase(); letter = guideCh; }
+  buildLetters(); drawBoard(); updateWriteUI();
+}
+$('caseLower').onclick = () => setCase('lower');
+$('caseUpper').onclick = () => setCase('upper');
+function buildUI(){
+  buildLetters();
   COLORS.forEach(color => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch'; b.style.background = color; b.dataset.color = color; b.setAttribute('aria-label','ペンの色');
     b.onclick = () => { penColor = color; updateWriteUI(); persist(); };
@@ -1349,7 +1473,7 @@ function setKind(k){
 function hasWork(){ return S.items.length > 0 || S.draft.length > 0 || strokes.length > 0 || S.bgStrokes.length > 0; }
 function fresh(kind){
   S = { kind, bgType:'white', bgColor:'#ffe3b3', bgColor2:null, bgStrokes:[], guides:false, items:[], nextId:1, draft:[] };
-  bgDirty = true; bgDraw = false; bgActive = null; bgTarget = 'a';
+  bgDirty = true; bgDraw = false; bgActive = null; bgTarget = 'a'; guideCh = null; letterManual = false; caseMode = 'lower'; buildLetters();
   selected = null; strokes = []; activeStroke = null; activePointer = null; writeTarget = null; editIdx = null; gSel = -1; scope = 'all'; dtab = 'tpl';
   setKind(kind); setView('write'); persist();
 }
@@ -1363,10 +1487,6 @@ function askConfirm(head,text,yes,action){
   $('confirmHead').textContent = head; $('confirmText').textContent = text; $('confirmYes').textContent = yes;
   confirmAction = action; $('confirmDialog').classList.remove('hidden'); $('confirmNo').focus();
 }
-$('resetBtn').onclick = () => {
-  if(!hasWork()){ fresh('card'); return; }
-  askConfirm('最初からやり直す？','いまの作品は消えます。のこしたいときは、先に「作品を保存」してね。','消して始める',() => fresh('card'));
-};
 $('confirmNo').onclick = () => $('confirmDialog').classList.add('hidden');
 $('confirmYes').onclick = () => { $('confirmDialog').classList.add('hidden'); if(confirmAction) confirmAction(); confirmAction = null; };
 $('confirmDialog').addEventListener('click', e => { if(e.target === $('confirmDialog')) $('confirmDialog').classList.add('hidden'); });
