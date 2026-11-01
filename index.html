@@ -104,17 +104,11 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
 .dialog h2{margin:0 0 10px;font-size:22px;font-weight:900}
 .dialog p{line-height:1.7;margin:0 0 14px;font-weight:500}
 .warn{background:#fff0ea;border-radius:14px;padding:10px 14px;color:#9a3a1d;font-weight:700!important}
-.kind-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0 16px}
-.kind-card{display:flex;flex-direction:column;align-items:center;gap:6px;border:3px solid var(--line-d);background:#fff;border-radius:22px;padding:20px 12px;box-shadow:0 5px 0 var(--line-d);transition:transform .12s}
-.kind-card:hover{transform:translateY(-3px)}
-.kind-card .ico{font-size:44px;line-height:1}
-.kind-card b{font-family:'Fredoka',sans-serif;font-size:19px;letter-spacing:.03em}
-.kind-card small{color:var(--soft);font-weight:700;font-size:13px;line-height:1.5;text-align:center}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#5a4636;color:#fff;padding:12px 22px;border-radius:999px;font-weight:700;font-size:15px;opacity:0;pointer-events:none;transition:all .25s;z-index:40;max-width:92vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media(max-width:1050px){.workspace{grid-template-columns:1fr}.panel{max-height:none}.stage{padding:14px}}
-@media(max-width:620px){.menu .btn{flex:1;font-size:13px;padding:6px}.kind-cards{grid-template-columns:1fr}}
+@media(max-width:620px){.menu .btn{flex:1;font-size:13px;padding:6px}}
 </style>
 </head>
 <body>
@@ -306,19 +300,6 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
  </main>
 </div>
 
-<!-- 作品の種類をえらぶ -->
-<div id="kindDialog" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="kindTitle">
- <div class="dialog wide">
-  <h2 id="kindTitle">なにを作ろう？</h2>
-  <p id="kindWarn" class="warn hidden">⚠️ いまの作品は消えるよ。のこしたいときは、先に「作品を保存」してね。</p>
-  <div class="kind-cards">
-   <button type="button" class="kind-card" data-kind="card"><span class="ico">🪪</span><b>MY NAME CARD</b><small>自分の名前で<br>英語の名刺をつくろう</small></button>
-   <button type="button" class="kind-card" data-kind="logo"><span class="ico">🔤</span><b>MY ALPHABET LOGO</b><small>すきな文字で<br>オリジナルロゴをつくろう</small></button>
-  </div>
-  <div class="row"><button id="kindClose" type="button" class="btn">もどる</button></div>
- </div>
-</div>
-
 <!-- 確認 -->
 <div id="confirmDialog" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="confirmHead">
  <div class="dialog">
@@ -348,8 +329,8 @@ const LINES = [50, 126, 202, 278];   // 4線のy位置（3本目が基準線）
 const GAP = LINES[1] - LINES[0];     // 1段の高さ（小文字の高さ）
 const CY = (LINES[0] + LINES[3]) / 2;
 const HALF_H = (LINES[3] - LINES[0]) / 2 + 26;
-const SIZES = { card: [900, 520], logo: [640, 640] };
-const TITLES = { card: 'MY NAME CARD', logo: 'MY ALPHABET LOGO' };
+const SIZES = { card: [900, 520] };
+const TITLES = { card: 'MY NAME CARD' };
 const KEY = 'myEnglishBrand_v2';
 
 const COLORS = ['#4a3b32','#ff6b4a','#ffb703','#ffd966','#7bc8a4','#2a9d8f','#4d8fd6','#8e7dd6','#f06292','#ffffff','#111111'];
@@ -438,6 +419,7 @@ function loadSaved(){
   try {
     const j = JSON.parse(localStorage.getItem(KEY) || 'null');
     if(!j || !j.S || !Array.isArray(j.S.items)) return false;
+    if(j.S.kind && j.S.kind !== 'card') return false;   // 名刺だけのアプリなので、ロゴの作品は引き継がない
     S = Object.assign(S, j.S);
     if(!Array.isArray(S.draft)) S.draft = [];
     if(!Array.isArray(S.bgStrokes)) S.bgStrokes = [];
@@ -1371,28 +1353,24 @@ function fresh(kind){
   selected = null; strokes = []; activeStroke = null; activePointer = null; writeTarget = null; editIdx = null; gSel = -1; scope = 'all'; dtab = 'tpl';
   setKind(kind); setView('write'); persist();
 }
-function openKind(){
-  $('kindWarn').classList.toggle('hidden', !hasWork());
-  $('kindDialog').classList.remove('hidden');
-  const first = document.querySelector('.kind-card'); if(first) first.focus();
-}
-document.querySelectorAll('.kind-card').forEach(b => b.onclick = () => { $('kindDialog').classList.add('hidden'); fresh(b.dataset.kind); toast('まず、文字を書いてみよう！'); });
-$('kindClose').onclick = () => $('kindDialog').classList.add('hidden');
-$('kindDialog').addEventListener('click', e => { if(e.target === $('kindDialog')) $('kindDialog').classList.add('hidden'); });
-$('newBtn').onclick = openKind;
+function startNew(){ fresh('card'); toast('まず、名前を書いてみよう！'); }
+$('newBtn').onclick = () => {
+  if(!hasWork()){ startNew(); return; }
+  askConfirm('新しい作品をはじめる？','いまの作品は消えます。のこしたいときは、先に「作品を保存」してね。','消して始める',startNew);
+};
 
 function askConfirm(head,text,yes,action){
   $('confirmHead').textContent = head; $('confirmText').textContent = text; $('confirmYes').textContent = yes;
   confirmAction = action; $('confirmDialog').classList.remove('hidden'); $('confirmNo').focus();
 }
 $('resetBtn').onclick = () => {
-  if(!hasWork()){ fresh(S.kind); return; }
-  askConfirm('最初からやり直す？','いまの作品は消えます。のこしたいときは、先に「作品を保存」してね。','消して始める',() => fresh(S.kind));
+  if(!hasWork()){ fresh('card'); return; }
+  askConfirm('最初からやり直す？','いまの作品は消えます。のこしたいときは、先に「作品を保存」してね。','消して始める',() => fresh('card'));
 };
 $('confirmNo').onclick = () => $('confirmDialog').classList.add('hidden');
 $('confirmYes').onclick = () => { $('confirmDialog').classList.add('hidden'); if(confirmAction) confirmAction(); confirmAction = null; };
 $('confirmDialog').addEventListener('click', e => { if(e.target === $('confirmDialog')) $('confirmDialog').classList.add('hidden'); });
-window.addEventListener('keydown', e => { if(e.key === 'Escape'){ $('confirmDialog').classList.add('hidden'); $('kindDialog').classList.add('hidden'); } });
+window.addEventListener('keydown', e => { if(e.key === 'Escape'){ $('confirmDialog').classList.add('hidden'); } });
 
 $('saveBtn').onclick = () => {
   if(!S.items.length && !S.bgStrokes.length){ toast('まだ作品に何も入っていないよ。「作品に入れる」を押してね。'); return; }
@@ -1401,7 +1379,7 @@ $('saveBtn').onclick = () => {
   out.toBlob(blob => {
     if(!blob){ toast('画像を作れませんでした。もう一度ためしてね。'); return; }
     const url = URL.createObjectURL(blob), a = document.createElement('a');
-    a.href = url; a.download = S.kind === 'card' ? 'my-name-card.png' : 'my-alphabet-logo.png';
+    a.href = url; a.download = 'my-name-card.png';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500);
     toast('作品のPNG画像を保存したよ！');
   }, 'image/png');
@@ -1422,7 +1400,7 @@ if(restored){
   toast('前の続きから始めたよ。');
 } else {
   setView('write');
-  openKind();
+  toast('まず、4線に名前を書いてみよう！');
 }
 })();
 </script>
