@@ -184,11 +184,6 @@ details.pen-box[open] summary::before{transform:rotate(90deg)}
      <div class="field"><label for="penWidth">太さ</label><input id="penWidth" type="range" min="3" max="22" value="8" aria-label="ペンの太さ"></div>
      <div id="penColors" class="swatches"></div>
     </details>
-    <div class="panel-section">
-     <h3>書いた文字</h3>
-     <p id="writeModeNote" class="note"></p>
-     <div id="stripWrite"></div>
-    </div>
    </section>
 
    <!-- デザインのパネル -->
@@ -253,15 +248,7 @@ details.pen-box[open] summary::before{transform:rotate(90deg)}
      <div id="editBody" class="hidden">
       <div id="wordBox">
        <h2>文字のならび</h2>
-       <div id="stripDesign"></div>
-       <button id="addMore" type="button" class="btn wide small">＋ 文字をつけたす</button>
-       <div class="panel-section">
-        <h3>どれを変える？</h3>
-        <div class="seg">
-         <button id="scopeAll" type="button" class="btn small">ぜんぶ</button>
-         <button id="scopeOne" type="button" class="btn small">えらんだ1文字</button>
-        </div>
-       </div>
+       <button id="rewriteAll" type="button" class="btn wide small">✎ 文字を、最初から書き直す</button>
        <div class="panel-section">
         <h3>文字の見え方</h3>
         <div class="seg">
@@ -1099,6 +1086,7 @@ async function finishWord(){
     writeTarget = null;
   }
   if(!S.draft.length){ toast('まず文字を書いてね。'); return; }
+  S.items = S.items.filter(x => x.type !== 'word');
   const it = newWord(S.draft); S.draft = [];
   S.items.push(it); editIdx = null;
   setView('design'); select(it.id); persist();
@@ -1199,7 +1187,19 @@ function setView(v){
   if(v === 'write') drawBoard();
   refresh(); draw(); fitCanvas();
 }
-$('writeTab').onclick = () => { writeTarget = null; setView('write'); };
+function restartWord(){
+  S.items = S.items.filter(x => x.type !== 'word'); S.draft = [];
+  selected = null; strokes = []; activeStroke = null; activePointer = null; queue = []; letterManual = false; detected = []; recogGen++;
+  writeTarget = null; editIdx = null; gSel = -1; scope = 'all';
+  setView('write'); persist();
+}
+function goWrite(){
+  if(S.items.some(x => x.type === 'word')){
+    askConfirm('文字を最初から書き直す？','いまの文字は消えます。','消して書き直す',restartWord);
+  } else { writeTarget = null; setView('write'); }
+}
+$('writeTab').onclick = goWrite;
+$('rewriteAll').onclick = goWrite;
 $('designTab').onclick = () => {
   if(strokes.length && editIdx === null){ /* 書きかけは残す */ }
   setView('design');
@@ -1228,8 +1228,6 @@ function updateWriteUI(){
   const editing = editIdx !== null;
   $('cancelEdit').classList.toggle('hidden', !editing);
   $('finishWord').textContent = editing ? '✓ 書き直した文字を入れる' : '✓ 作品に入れる';
-  const t = writeTarget !== null && S.items.find(x => x.id === writeTarget);
-  $('writeModeNote').textContent = t ? '作品の文字列に足しているよ。文字を書いたら、「作品に入れる」を押してね。' : '名前を作っているよ。1文字ずつ書いていこう。';
 }
 function refreshEdit(){
   const it = sel();
@@ -1243,9 +1241,6 @@ function refreshEdit(){
   $('rotateSlider').value = it.rotation;
   $('opacitySlider').value = Math.round(it.opacity * 100);
   if(isWord){
-    renderStrip($('stripDesign'));
-    $('scopeAll').classList.toggle('active', scope === 'all' || gSel < 0);
-    $('scopeOne').classList.toggle('active', scope === 'one' && gSel >= 0);
     const tg = targets(it);
     $('handMode').classList.toggle('active', tg.every(g => g.display !== 'font'));
     $('fontMode').classList.toggle('active', tg.every(g => g.display === 'font'));
@@ -1288,7 +1283,6 @@ function updateTabs(){
 }
 function refresh(){
   updateWriteUI();
-  if(view === 'write') renderStrip($('stripWrite'));
   if(view === 'design'){ refreshEdit(); updateTabs(); }
 }
 ['edit','tpl','bg','deco'].forEach(k => { $('tab-' + k).onclick = () => { dtab = k; if(k !== 'bg') bgDraw = false; updateTabs(); }; });
@@ -1317,11 +1311,8 @@ $('bgClear').onclick = () => {
   askConfirm('背景の絵を全部消す？','背景にかいた絵が全部消えます。文字やかざりは消えません。','全部消す',() => { S.bgStrokes = []; bgDirty = true; updateTabs(); draw(); persist(); toast('背景の絵を消したよ。'); });
 };
 
-$('scopeAll').onclick = () => { scope = 'all'; gSel = -1; refresh(); draw(); };
-$('scopeOne').onclick = () => { const it = sel(); if(!it || it.type !== 'word') return; scope = 'one'; if(gSel < 0) gSel = 0; refresh(); draw(); };
 $('handMode').onclick = () => { const it = sel(); if(it && it.type === 'word'){ targets(it).forEach(g => g.display = 'hand'); refresh(); draw(); persist(); } };
 $('fontMode').onclick = () => { const it = sel(); if(it && it.type === 'word'){ targets(it).forEach(g => g.display = 'font'); refresh(); draw(); persist(); } };
-$('addMore').onclick = () => { const it = sel(); if(!it || it.type !== 'word') return; writeTarget = it.id; editIdx = null; setView('write'); };
 
 [['sizeSlider','scale',v => v/100],['rotateSlider','rotation',Number],['opacitySlider','opacity',v => v/100]].forEach(([id,key,fn]) =>
   $(id).addEventListener('input', e => { const it = sel(); if(it){ it[key] = fn(e.target.value); draw(); persist(); } }));
