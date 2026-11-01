@@ -95,6 +95,7 @@ input[type=range]{width:100%;accent-color:#ff8a5c;height:34px}
 .font-choice small{font-family:'Zen Maru Gothic',sans-serif;font-size:12px;color:var(--soft);font-weight:700}
 .font-choice.selected{border-color:#ff8a5c;box-shadow:0 0 0 3px #ffd0b8}
 .seg{display:flex;gap:6px}
+.letters.locked{opacity:.4}
 details.pen-box summary{cursor:pointer;font-weight:900;font-size:15px;min-height:44px;display:flex;align-items:center;list-style:none}
 details.pen-box summary::-webkit-details-marker{display:none}
 details.pen-box summary::before{content:'▸';margin-right:8px;display:inline-block;transition:transform .15s}
@@ -139,9 +140,9 @@ details.pen-box[open] summary::before{transform:rotate(90deg)}
      <div class="badge" id="curLetterBadge">いま書く文字<b>a</b></div>
     </div>
     <ol class="steps">
-     <li><span>1</span>右で文字をえらんで、なぞる</li>
-     <li><span>2</span>つぎの文字も同じように</li>
-     <li><span>3</span>書けたら「作品に入れる」</li>
+     <li><span>1</span>書きたい文字を、右で左から順にえらぶ</li>
+     <li><span>2</span>うすい見本を、なぞる</li>
+     <li><span>3</span>「作品に入れる」をおす</li>
     </ol>
     <div class="board-frame"><canvas id="writingBoard" width="1800" height="640" tabindex="0" aria-label="4線の手書きエリア"></canvas></div>
     <p id="boardNote" class="note" style="text-align:center;margin-top:10px"></p>
@@ -170,12 +171,13 @@ details.pen-box[open] summary::before{transform:rotate(90deg)}
   <aside class="panel" aria-label="編集パネル">
    <!-- 書くときのパネル -->
    <section id="writePanel">
-    <h2 id="letterHeading">文字をえらぶと、なぞれるよ</h2>
+    <h2 id="letterHeading">書きたい文字を、左から順にえらぼう</h2>
     <div class="seg" style="margin-bottom:10px">
      <button id="caseLower" class="btn small" type="button">a 小文字</button>
      <button id="caseUpper" class="btn small" type="button">A 大文字</button>
     </div>
     <div id="letterChoices" class="letters"></div>
+    <button id="queueBack" class="btn small wide" type="button" style="margin-top:10px">⌫ えらんだ文字を1つもどす</button>
     <p id="letterNote" class="note"></p>
     <details class="panel-section pen-box">
      <summary>🖍 ペンの太さ・色をかえる</summary>
@@ -325,13 +327,14 @@ const $ = id => document.getElementById(id);
    定数
    ========================================================= */
 const SS = 2;                 // 画面用の解像度倍率
-const EXPORT = 3;             // 保存画像の解像度倍率
+const EXPORT_DPI = 300;       // 保存画像の解像度（名刺サイズでそのまま印刷できる）
+const EXPORT_W = Math.round(91 / 25.4 * EXPORT_DPI), EXPORT_H = Math.round(55 / 25.4 * EXPORT_DPI);   // 91×55mm = 1075×650px
 const BW = 900, BH = 320;     // 手書きボードのサイズ（内部単位）
 const LINES = [50, 126, 202, 278];   // 4線のy位置（3本目が基準線）
 const GAP = LINES[1] - LINES[0];     // 1段の高さ（小文字の高さ）
 const CY = (LINES[0] + LINES[3]) / 2;
 const HALF_H = (LINES[3] - LINES[0]) / 2 + 26;
-const SIZES = { card: [900, 520] };
+const SIZES = { card: [910, 550] };   // 名刺（91×55mm）と同じ縦横の比
 const TITLES = { card: 'MY NAME CARD' };
 const KEY = 'myEnglishBrand_v2';
 
@@ -383,7 +386,7 @@ let S = { kind:'card', bgType:'white', bgColor:'#ffe3b3', bgColor2:null, bgStrok
 let bgDraw = false, bgActive = null, bgEraser = false, bgPenColor = '#ff6b4a', bgPenWidth = 14, bgTarget = 'a';
 let bgLayer = null, bgDirty = true;
 // 文字をえらぶ・なぞる
-let caseMode = 'lower', guideCh = null;
+let caseMode = 'lower', queue = [];      // queue = なぞる文字（左から順）
 const LOWER = 'abcdefghijklmnopqrstuvwxyz', UPPER = LOWER.toUpperCase();
 const isUpper = ch => ch >= 'A' && ch <= 'Z';
 let W = 900, H = 520;
@@ -533,9 +536,18 @@ const TRACE = {
 };
 
 /* なぞり書きの見本と、書き始めの印（番号は書き順） */
-function drawTrace(c,ch){
+/* えらんだ文字を左から順にならべる位置（全体を真ん中にそろえる。文字がふえると、左にずれていく） */
+function queueSlots(list){
+  const gap = GAP * 0.45;
+  const ws = list.map(ch => (TRACE[ch] ? TRACE[ch].w : 1) * GAP);
+  const total = ws.reduce((a,b) => a + b, 0) + gap * Math.max(0, list.length - 1);
+  let x = (BW - total) / 2; const slots = [];
+  list.forEach((ch,i) => { slots.push({ ch, x0:x, w:ws[i] }); x += ws[i] + gap; });
+  return { slots, total };
+}
+function drawTrace(c,ch,x0){
   const g = TRACE[ch]; if(!g) return;
-  c.save(); c.translate((BW - g.w * GAP) / 2, LINES[0]);
+  c.save(); c.translate(x0, LINES[0]);
   c.save(); c.scale(GAP,GAP); c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = '#ecd5b3'; c.lineWidth = 16 / GAP;
   g.s.forEach(d => c.stroke(new Path2D(d))); c.restore();
   const placed = [];
@@ -903,7 +915,7 @@ function drawBoard(){
   wc.fillStyle = '#fffefb'; wc.fillRect(0,0,BW,BH);
   wc.fillStyle = '#fff6e6'; wc.fillRect(0,LINES[1],BW,LINES[2]-LINES[1]);
   fourLines(wc,0,BW,1);
-  if(guideCh) drawTrace(wc,guideCh);
+  queueSlots(queue).slots.forEach(sl => drawTrace(wc, sl.ch, sl.x0));
   strokes.forEach(s => strokePath(wc,s,s.color,s.width));
   if(activeStroke) strokePath(wc,activeStroke,activeStroke.color,activeStroke.width);
 }
@@ -935,6 +947,7 @@ function finishStroke(e){
   if(!activeStroke || e.pointerId !== activePointer) return;
   e.preventDefault();
   strokes.push(activeStroke); activeStroke = null; activePointer = null;
+  updateWriteUI();
   scheduleRecog();
 }
 board.addEventListener('pointerup', finishStroke);
@@ -995,7 +1008,7 @@ function scheduleRecog(){
 }
 
 $('undoStroke').onclick = () => { strokes.pop(); recogGen++; detected = []; drawBoard(); updateWriteUI(); scheduleRecog(); };
-$('clearStrokes').onclick = () => { strokes = []; activeStroke = null; activePointer = null; letterManual = !!guideCh; detected = []; recogGen++; clearTimeout(recogTimer); drawBoard(); updateWriteUI(); toast('もう一度書けるよ。'); };
+$('clearStrokes').onclick = () => { strokes = []; activeStroke = null; activePointer = null; letterManual = queue.length > 0; detected = []; recogGen++; clearTimeout(recogTimer); drawBoard(); updateWriteUI(); toast('もう一度書けるよ。'); };
 $('penWidth').addEventListener('input', e => { penWidth = Number(e.target.value); persist(); });
 
 /* ---- 文字を足す・作品に入れる ---- */
@@ -1012,31 +1025,49 @@ function curWord(){
   const it = sel(); return it && it.type === 'word' ? it : null;
 }
 let adding = false;
+// ならんだ見本のどこに近いかで、書いた線を文字ごとに分ける
+function nearestSlot(stroke, slots){
+  let sx = 0; stroke.points.forEach(p => { sx += p[0]; }); const cx = sx / stroke.points.length;
+  let best = 0, bd = 1e9;
+  slots.forEach((sl,i) => {
+    const d = Math.max(0, sl.x0 - cx, cx - (sl.x0 + sl.w)) + Math.abs(cx - (sl.x0 + sl.w / 2)) * 0.001;
+    if(d < bd){ bd = d; best = i; }
+  });
+  return best;
+}
 async function addGlyph(silent){
   if(adding) return false;
   if(!strokes.length){ if(!silent) toast('まず4線の上に文字を書いてね。'); return false; }
-  if(!recognizer && !letterManual){ toast('先に右で文字をえらんで、うすい見本をなぞってね。'); return false; }
+  const editing = editIdx !== null, useQueue = !editing && queue.length > 0;
+  if(!editing && !useQueue && !recognizer){ toast('先に右で文字をえらんで、うすい見本をなぞってね。'); return false; }
   adding = true;
   try {
     clearTimeout(recogTimer); recogGen++;
-    const editing = editIdx !== null;
-    const groups = boardGroups();
-    if(groups.length > 1 && !recognizer){
-      toast('この端末では、文字を自動で分けられないよ。1文字ずつ、文字をえらんで書いてね。');
-      return false;
-    }
-    // 文字をきめる：1文字で自分でえらんだときはそれを使い、それ以外はよみとる
-    const chars = [];
-    let unsure = 0;
-    for(const g of groups){
-      let ch = null;
-      if(groups.length === 1 && letterManual) ch = letter;
-      else if(recognizer) ch = await recognizeStrokes(g);
-      if(!ch){
-        if(groups.length === 1){ toast('どの文字かわからなかったよ。右で文字をえらんでね。'); return false; }
-        ch = 'a'; unsure++;
+    let groups, chars = [], unsure = 0;
+    if(useQueue){
+      const { slots } = queueSlots(queue);
+      groups = slots.map(() => []);
+      strokes.forEach(st => groups[nearestSlot(st, slots)].push(st));
+      const missing = groups.findIndex(g => !g.length);
+      if(missing >= 0){ toast('「' + queue[missing] + '」が、まだなぞれていないよ。'); return false; }
+      chars = queue.slice();
+    } else {
+      groups = boardGroups();
+      if(groups.length > 1 && !recognizer){
+        toast('この端末では、文字を自動で分けられないよ。文字をえらんで、見本をなぞってね。');
+        return false;
       }
-      chars.push(ch);
+      // 文字をきめる：書き直しのときはえらんだ文字、自由に書いたときはよみとり
+      for(const g of groups){
+        let ch = null;
+        if(groups.length === 1 && letterManual) ch = letter;
+        else if(recognizer) ch = await recognizeStrokes(g);
+        if(!ch){
+          if(groups.length === 1){ toast('どの文字かわからなかったよ。右で文字をえらんでね。'); return false; }
+          ch = 'a'; unsure++;
+        }
+        chars.push(ch);
+      }
     }
     const w = writeWordObj();
     const glyphs = groups.map((g,i) => makeGlyphFrom(g, chars[i]));
@@ -1046,14 +1077,10 @@ async function addGlyph(silent){
       if(!silent) toast('書き直したよ！');
     } else {
       glyphs.forEach(g => w.glyphs.push(g));
-      if(!silent){
-        toast(glyphs.length > 1
-          ? '「' + chars.join(' ') + '」の' + glyphs.length + '文字ができたよ。' + (unsure ? 'よみとれなかった文字は、一覧で直してね。' : '')
-          : '「' + chars[0] + '」ができたよ。つぎの文字も書こう！');
-      }
+      if(!silent) toast('「' + chars.join('') + '」ができたよ。' + (unsure ? 'よみとれなかった文字は、一覧で直してね。' : ''));
     }
     if(groups.length === 1 && chars[0]) letter = chars[0];
-    guideCh = null;
+    queue = [];
     gSel = -1; scope = 'all';
     strokes = []; activeStroke = null; activePointer = null; letterManual = false; detected = [];
     drawBoard(); refresh(); draw(); persist();
@@ -1063,6 +1090,7 @@ async function addGlyph(silent){
 async function finishWord(){
   const wasEditing = editIdx !== null;
   if(wasEditing && !strokes.length){ toast('書き直す文字を4線に書いてね。（やめるときは「書き直しをやめる」）'); return; }
+  if(!wasEditing && queue.length && !strokes.length){ toast('うすい見本を、なぞってから「作品に入れる」を押してね。'); return; }
   if(strokes.length){ const ok = await addGlyph(true); if(!ok) return; }
   if(wasEditing && writeTarget === null){ toast('書き直したよ！'); return; }
   if(writeTarget !== null){
@@ -1077,7 +1105,7 @@ async function finishWord(){
   toast('作品に入れたよ！ドラッグして動かしてみよう。');
 }
 $('finishWord').onclick = finishWord;
-$('cancelEdit').onclick = () => { editIdx = null; strokes = []; drawBoard(); refresh(); toast('書き直しをやめたよ。'); };
+$('cancelEdit').onclick = () => { editIdx = null; strokes = []; queue = []; letterManual = false; drawBoard(); refresh(); toast('書き直しをやめたよ。'); };
 
 /* ---- 文字の並び（チップ） ---- */
 function thumb(g){
@@ -1147,7 +1175,7 @@ function beginRewrite(){
   if(!w || gSel < 0 || !w.glyphs[gSel]){ toast('書き直す文字を、一覧からえらんでね。'); return; }
   const g = w.glyphs[gSel];
   if(view === 'design') writeTarget = w.id;
-  editIdx = gSel; letter = g.ch; letterManual = true; guideCh = null;
+  editIdx = gSel; letter = g.ch; letterManual = true; queue = [g.ch];
   caseMode = isUpper(g.ch) ? 'upper' : 'lower'; buildLetters();
   const dx = (BW - g.w) / 2;
   strokes = g.strokes.map(s => ({ color:g.color || s.color, width:s.width, points:s.points.map(p => [p[0] + dx, p[1], p[2] || 0]) }));
@@ -1183,16 +1211,18 @@ $('designTab').onclick = () => {
 function targets(it){ return (scope === 'one' && gSel >= 0 && it.glyphs[gSel]) ? [it.glyphs[gSel]] : it.glyphs; }
 function updateWriteUI(){
   const auto = !!recognizer;
-  if(guideCh) $('curLetterBadge').innerHTML = 'なぞる文字<b>' + guideCh + '</b>';
+  const locked = strokes.length > 0 && editIdx === null;
+  if(queue.length) $('curLetterBadge').innerHTML = 'なぞる文字<b>' + queue.join(' ') + '</b>';
   else if(auto && strokes.length && detected.length) $('curLetterBadge').innerHTML = 'よみとった文字<b>' + detected.map(c => c || '?').join(' ') + '</b>';
   else $('curLetterBadge').innerHTML = auto ? 'じゆうに書いてもOK' : '文字をえらぼう';
-  $('boardNote').textContent = guideCh
-    ? 'うすい見本をなぞって書こう。オレンジの数字は、書きはじめの場所と順番だよ。'
-    : (auto ? '右で文字をえらぶと、4線の上に見本が出るよ。見本なしで、名前を続けて書いてもOK。' : '右で文字をえらぶと、4線の上に見本が出るよ。なぞって書こう。');
-  $('letterNote').textContent = 'もういちど同じ文字を押すと、見本が消えるよ。';
+  $('boardNote').textContent = queue.length
+    ? 'うすい見本を、左から順になぞろう。オレンジの数字は、書きはじめの場所と書く順番だよ。'
+    : (auto ? '書きたい文字を、右で左から順にえらぼう。見本なしで、名前を書いてもOK。' : '書きたい文字を、右で左から順にえらぼう。4線の上に見本が出るよ。');
+  $('letterNote').textContent = locked ? 'なぞりはじめたので、文字は変えられないよ。変えたいときは「消して書き直す」を押してね。' : '先に、ぜんぶえらんでから、なぞるよ。まちがえたら「1つもどす」。';
+  $('letterChoices').classList.toggle('locked', locked);
+  $('queueBack').disabled = !queue.length;
   $('caseLower').classList.toggle('active', caseMode === 'lower');
   $('caseUpper').classList.toggle('active', caseMode === 'upper');
-  document.querySelectorAll('#letterChoices .letter').forEach(b => b.classList.toggle('chosen', b.dataset.letter === guideCh));
   document.querySelectorAll('#penColors .swatch').forEach(b => b.classList.toggle('chosen', b.dataset.color === penColor));
   $('penWidth').value = penWidth;
   const editing = editIdx !== null;
@@ -1369,23 +1399,21 @@ function buildLetters(){
     lc.appendChild(b);
   });
 }
-// 文字ボタン：4線の上に見本を出す。書きかけの文字があれば、先にその文字を確定する
-async function onLetterTap(ch){
-  if(adding) return;
-  if(editIdx === null && strokes.length && ch !== guideCh){
-    const ok = await addGlyph(false);
-    if(!ok) return;
-  }
-  if(ch === guideCh && !strokes.length){ guideCh = null; letterManual = false; }          // もういちど押すと見本が消える
-  else if(ch !== guideCh || !strokes.length){ guideCh = ch; letter = ch; letterManual = true; }
-  caseMode = isUpper(ch) ? 'upper' : 'lower'; buildLetters();
-  drawBoard(); updateWriteUI(); persist();
+// 文字ボタン：えらんだ文字を、左から順に見本としてならべる
+function afterQueueChange(){ drawBoard(); updateWriteUI(); persist(); }
+function onLetterTap(ch){
+  if(editIdx !== null){ queue = [ch]; letter = ch; letterManual = true; afterQueueChange(); return; }    // 書き直しのときは、見本を入れかえる
+  if(strokes.length){ toast('なぞりはじめたら、文字はふやせないよ。直したいときは「消して書き直す」を押してね。'); return; }
+  if(queueSlots(queue.concat(ch)).total > BW - 80){ toast('これ以上は入らないよ。'); return; }
+  queue.push(ch); letter = ch; letterManual = true;
+  afterQueueChange();
 }
-function setCase(m){
-  caseMode = m;
-  if(guideCh && !strokes.length){ guideCh = m === 'upper' ? guideCh.toUpperCase() : guideCh.toLowerCase(); letter = guideCh; }
-  buildLetters(); drawBoard(); updateWriteUI();
-}
+$('queueBack').onclick = () => {
+  if(editIdx !== null || !queue.length) return;
+  if(strokes.length){ toast('なぞりはじめたら、文字は変えられないよ。「消して書き直す」を押してね。'); return; }
+  queue.pop(); letterManual = queue.length > 0; afterQueueChange();
+};
+function setCase(m){ caseMode = m; buildLetters(); updateWriteUI(); }
 $('caseLower').onclick = () => setCase('lower');
 $('caseUpper').onclick = () => setCase('upper');
 function buildUI(){
@@ -1473,7 +1501,7 @@ function setKind(k){
 function hasWork(){ return S.items.length > 0 || S.draft.length > 0 || strokes.length > 0 || S.bgStrokes.length > 0; }
 function fresh(kind){
   S = { kind, bgType:'white', bgColor:'#ffe3b3', bgColor2:null, bgStrokes:[], guides:false, items:[], nextId:1, draft:[] };
-  bgDirty = true; bgDraw = false; bgActive = null; bgTarget = 'a'; guideCh = null; letterManual = false; caseMode = 'lower'; buildLetters();
+  bgDirty = true; bgDraw = false; bgActive = null; bgTarget = 'a'; queue = []; letterManual = false; caseMode = 'lower'; buildLetters();
   selected = null; strokes = []; activeStroke = null; activePointer = null; writeTarget = null; editIdx = null; gSel = -1; scope = 'all'; dtab = 'tpl';
   setKind(kind); setView('write'); persist();
 }
@@ -1492,16 +1520,47 @@ $('confirmYes').onclick = () => { $('confirmDialog').classList.add('hidden'); if
 $('confirmDialog').addEventListener('click', e => { if(e.target === $('confirmDialog')) $('confirmDialog').classList.add('hidden'); });
 window.addEventListener('keydown', e => { if(e.key === 'Escape'){ $('confirmDialog').classList.add('hidden'); } });
 
+/* PNGに「300dpi」の情報を入れる（印刷ソフトで、名刺の実寸 91×55mm になる） */
+function crc32(bytes){
+  let crc = 0xFFFFFFFF;
+  for(let i = 0; i < bytes.length; i++){ crc ^= bytes[i]; for(let k = 0; k < 8; k++) crc = (crc >>> 1) ^ (0xEDB88320 & -(crc & 1)); }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+async function withDpi(blob, dpi){
+  try {
+    const buf = new Uint8Array(await blob.arrayBuffer()), dv = new DataView(buf.buffer);
+    for(let pos = 8; pos + 8 <= buf.length;){
+      const type = String.fromCharCode(buf[pos+4], buf[pos+5], buf[pos+6], buf[pos+7]);
+      if(type === 'pHYs') return blob;
+      if(type === 'IDAT') break;
+      pos += 12 + dv.getUint32(pos);
+    }
+    const ppm = Math.round(dpi / 0.0254);
+    const chunk = new Uint8Array(21), cd = new DataView(chunk.buffer);
+    cd.setUint32(0, 9); chunk.set([0x70,0x48,0x59,0x73], 4); cd.setUint32(8, ppm); cd.setUint32(12, ppm); chunk[16] = 1;
+    cd.setUint32(17, crc32(chunk.subarray(4, 17)));
+    const out = new Uint8Array(buf.length + chunk.length);
+    out.set(buf.subarray(0, 33)); out.set(chunk, 33); out.set(buf.subarray(33), 33 + chunk.length);
+    return new Blob([out], { type:'image/png' });
+  } catch (e) { return blob; }
+}
+function cardFileName(){
+  const w = S.items.find(x => x.type === 'word');
+  const t = w ? w.glyphs.map(g => g.ch).join('') : '';
+  return 'name-card' + (t ? '_' + t : '') + '.png';
+}
 $('saveBtn').onclick = () => {
   if(!S.items.length && !S.bgStrokes.length){ toast('まだ作品に何も入っていないよ。「作品に入れる」を押してね。'); return; }
-  const out = document.createElement('canvas'); out.width = W * EXPORT; out.height = H * EXPORT;
-  const c = out.getContext('2d'); c.scale(EXPORT,EXPORT); paintScene(c, buildBgLayer(EXPORT));
-  out.toBlob(blob => {
+  const k = EXPORT_W / W;
+  const out = document.createElement('canvas'); out.width = EXPORT_W; out.height = EXPORT_H;
+  const c = out.getContext('2d'); c.scale(k,k); paintScene(c, buildBgLayer(k));
+  out.toBlob(async blob => {
     if(!blob){ toast('画像を作れませんでした。もう一度ためしてね。'); return; }
-    const url = URL.createObjectURL(blob), a = document.createElement('a');
-    a.href = url; a.download = 'my-name-card.png';
+    const png = await withDpi(blob, EXPORT_DPI);
+    const url = URL.createObjectURL(png), a = document.createElement('a');
+    a.href = url; a.download = cardFileName();
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500);
-    toast('作品のPNG画像を保存したよ！');
+    toast('名刺サイズ（91×55mm）のPNG画像を保存したよ！');
   }, 'image/png');
 };
 

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>名刺プリントシート（先生用）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#fff4e2;--paper:#fffdf8;--ink:#5a4636;--soft:#8a7461;--coral:#ff8a5c;--sun:#ffcf5c;--mint:#8fd3b6;--line-d:#e3c9a6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','M PLUS Rounded 1c',Meiryo,sans-serif;color:var(--ink);min-height:100vh;
+ background:radial-gradient(circle at 10% 6%,#ffe5bd 0,transparent 36%),radial-gradient(circle at 92% 94%,#ffd6cc 0,transparent 34%),var(--cream)}
+button{font:inherit;color:inherit;cursor:pointer}
+.app{max-width:1100px;margin:auto;padding:16px clamp(12px,2vw,28px) 40px}
+h1{font-size:24px;margin:6px 0 4px}
+.lead{margin:0 0 16px;color:var(--soft);font-weight:700}
+.card{background:var(--paper);border:2px solid #f1dfc6;border-radius:24px;padding:18px 20px;box-shadow:0 10px 30px #a77d4a1f;margin-bottom:16px}
+.card h2{margin:0 0 8px;font-size:18px}
+ol{margin:6px 0 0;padding-left:22px;line-height:1.9;font-weight:500}
+.note{font-size:13px;color:var(--soft);line-height:1.7;margin:10px 0 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.btn{min-height:48px;border:2px solid var(--line-d);border-radius:18px;background:#fff;padding:8px 18px;font-weight:700;font-size:15px;box-shadow:0 4px 0 var(--line-d)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line-d)}
+.btn.primary{background:var(--coral);border-color:#e8683a;box-shadow:0 4px 0 #e8683a;color:#3b1d0e}
+.btn.go{background:var(--mint);border-color:#5fb895;box-shadow:0 4px 0 #5fb895;color:#16422f}
+.btn:disabled{opacity:.45}
+.count{font-weight:900}
+.sheets{display:flex;flex-direction:column;align-items:center;gap:18px}
+
+/* ---- A4シート（名刺 91×55mm を 2列×5段 = 10まい） ---- */
+.sheet{position:relative;width:210mm;height:297mm;background:#fff;box-shadow:0 6px 24px #0002;zoom:.55;overflow:hidden;break-after:page;page-break-after:always}
+.sheet:last-child{break-after:auto;page-break-after:auto}
+.slot{position:absolute;width:91mm;height:55mm;overflow:hidden}
+.slot img{display:block;width:91mm;height:55mm;object-fit:fill}
+.slot.empty{outline:.2mm dashed #e8dcc8;outline-offset:-.2mm}
+.mark{position:absolute;background:#8a8a8a}
+.mark.v{width:.2mm;height:5mm}
+.mark.h{height:.2mm;width:5mm}
+.cap{position:absolute;left:0;right:0;bottom:2.5mm;text-align:center;font-size:2.8mm;color:#aaa}
+@page{size:A4;margin:0}
+@media print{
+  body{background:#fff}
+  .app{padding:0;max-width:none}
+  .no-print{display:none!important}
+  .sheets{display:block;gap:0}
+  .sheet{zoom:1;box-shadow:none}
+  .slot.empty{outline:none}
+  .cap{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="no-print">
+  <h1>🖨️ 名刺プリントシート（先生用）</h1>
+  <p class="lead">児童が保存した名刺の画像（PNG）を、A4用紙に10まいずつ、名刺の大きさで並べて印刷します。</p>
+
+  <div class="card">
+   <h2>つかいかた</h2>
+   <ol>
+    <li>下の「画像をえらぶ」で、集めた名刺のPNG画像をまとめて選びます（<b>Ctrl+A</b> で全部選べます）。</li>
+    <li>下に、印刷される並びが出ます。画像の名前の順に、左上から並びます。</li>
+    <li>「印刷する」を押し、印刷の画面で次のように設定します。
+     <ul style="margin:4px 0 0;line-height:1.8">
+      <li>用紙サイズ：<b>A4</b></li>
+      <li>倍率：<b>100%</b>（「用紙に合わせる」は使わない）</li>
+      <li>余白：<b>なし</b>（または「最小」）</li>
+      <li>「ヘッダーとフッター」：<b>オフ</b></li>
+     </ul>
+    </li>
+    <li>まわりの小さな印に合わせて切ると、名刺の大きさ（91×55mm）になります。</li>
+   </ol>
+   <p class="note">※ 名刺サイズ（91×55mm）で保存した画像を使ってください。ちがう大きさの画像は、少しのびちぢみして入ります。</p>
+   <div class="row">
+    <button id="pick" class="btn primary" type="button">🖼️ 画像をえらぶ</button>
+    <button id="print" class="btn go" type="button" disabled>🖨️ 印刷する</button>
+    <button id="clear" class="btn" type="button" disabled>ぜんぶ消す</button>
+    <span class="count" id="count"></span>
+   </div>
+   <input id="file" type="file" accept="image/png,image/jpeg" multiple hidden>
+  </div>
+ </div>
+
+ <div id="sheets" class="sheets"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const COLS = 2, ROWS = 5, CW = 91, CH = 55;
+const LEFT = (210 - CW * COLS) / 2, TOP = (297 - CH * ROWS) / 2;
+let files = [];
+
+function mark(sheet, cls, x, y){
+  const m = document.createElement('div'); m.className = 'mark ' + cls; m.style.left = x + 'mm'; m.style.top = y + 'mm'; sheet.appendChild(m);
+}
+function build(){
+  const box = $('sheets'); box.innerHTML = '';
+  const pages = Math.max(1, Math.ceil(files.length / (COLS * ROWS)));
+  if(!files.length){ $('count').textContent = ''; $('print').disabled = true; $('clear').disabled = true; return; }
+  for(let p = 0; p < pages; p++){
+    const sheet = document.createElement('div'); sheet.className = 'sheet';
+    for(let i = 0; i < COLS * ROWS; i++){
+      const f = files[p * COLS * ROWS + i];
+      const slot = document.createElement('div'); slot.className = 'slot' + (f ? '' : ' empty');
+      slot.style.left = (LEFT + (i % COLS) * CW) + 'mm'; slot.style.top = (TOP + Math.floor(i / COLS) * CH) + 'mm';
+      if(f){ const img = document.createElement('img'); img.src = f.url; img.alt = f.name; slot.appendChild(img); }
+      sheet.appendChild(slot);
+    }
+    // 切るための小さな印（紙のはしに）
+    for(let c = 0; c <= COLS; c++){ mark(sheet,'v', LEFT + c * CW, TOP - 7); mark(sheet,'v', LEFT + c * CW, TOP + ROWS * CH + 2); }
+    for(let r = 0; r <= ROWS; r++){ mark(sheet,'h', LEFT - 7, TOP + r * CH); mark(sheet,'h', LEFT + COLS * CW + 2, TOP + r * CH); }
+    const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = (p + 1) + ' / ' + pages; sheet.appendChild(cap);
+    box.appendChild(sheet);
+  }
+  $('count').textContent = files.length + ' まい（A4 ' + pages + ' 枚）';
+  $('print').disabled = false; $('clear').disabled = false;
+}
+$('pick').onclick = () => $('file').click();
+$('file').addEventListener('change', e => {
+  const list = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type));
+  list.sort((a,b) => a.name.localeCompare(b.name, 'en', { numeric:true }));
+  files.forEach(f => URL.revokeObjectURL(f.url));
+  files = list.map(f => ({ name:f.name, url:URL.createObjectURL(f) }));
+  e.target.value = '';
+  build();
+});
+$('clear').onclick = () => { files.forEach(f => URL.revokeObjectURL(f.url)); files = []; build(); };
+$('print').onclick = () => {
+  const imgs = Array.from(document.querySelectorAll('.slot img'));
+  Promise.all(imgs.map(i => i.decode ? i.decode().catch(() => null) : null)).then(() => window.print());
+};
+build();
+})();
+</script>
+</body>
+</html>
