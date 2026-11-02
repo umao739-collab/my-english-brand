@@ -64,7 +64,8 @@ ol{margin:6px 0 0;padding-left:22px;line-height:1.9;font-weight:500}
    <ol>
     <li>下の「画像をえらぶ」で、集めた名刺のPNG画像、または、ロイロノートから出したPDFをまとめて選びます（<b>Ctrl+A</b> で全部選べます）。PDFのときは、名刺の形のページだけが入ります（インターネットにつながっている必要があります）。</li>
     <li>下に、印刷される並びが出ます。画像の名前の順に、左上から並びます。</li>
-    <li>「印刷する」を押し、印刷の画面で次のように設定します。
+    <li>この端末で印刷できないときは、「印刷用のPDFを保存」を押します。保存したPDFを、印刷できるパソコンで開き、倍率100%で印刷してください。</li>
+    <li>印刷できるときは、「印刷する」を押し、印刷の画面で次のように設定します。
      <ul style="margin:4px 0 0;line-height:1.8">
       <li>用紙サイズ：<b>A4</b></li>
       <li>倍率：<b>100%</b>（「用紙に合わせる」は使わない）</li>
@@ -78,6 +79,7 @@ ol{margin:6px 0 0;padding-left:22px;line-height:1.9;font-weight:500}
    <div class="row">
     <button id="pick" class="btn primary" type="button">🖼️ 画像をえらぶ</button>
     <button id="print" class="btn go" type="button" disabled>🖨️ 印刷する</button>
+    <button id="pdf" class="btn primary" type="button" disabled>📄 印刷用のPDFを保存</button>
     <button id="clear" class="btn" type="button" disabled>ぜんぶ消す</button>
     <span class="count" id="count"></span><span class="note" id="msg" style="margin:0"></span>
    </div>
@@ -102,7 +104,7 @@ function mark(sheet, cls, x, y){
 function build(){
   const box = $('sheets'); box.innerHTML = '';
   const pages = Math.max(1, Math.ceil(files.length / (COLS * ROWS)));
-  if(!files.length){ $('count').textContent = ''; $('print').disabled = true; $('clear').disabled = true; return; }
+  if(!files.length){ $('count').textContent = ''; $('print').disabled = true; $('pdf').disabled = true; $('clear').disabled = true; return; }
   for(let p = 0; p < pages; p++){
     const sheet = document.createElement('div'); sheet.className = 'sheet';
     for(let i = 0; i < COLS * ROWS; i++){
@@ -119,7 +121,7 @@ function build(){
     box.appendChild(sheet);
   }
   $('count').textContent = files.length + ' まい（A4 ' + pages + ' 枚）';
-  $('print').disabled = false; $('clear').disabled = false;
+  $('print').disabled = false; $('pdf').disabled = false; $('clear').disabled = false;
 }
 $('pick').onclick = () => $('file').click();
 const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
@@ -168,6 +170,35 @@ $('file').addEventListener('change', async e => {
   build();
 });
 $('clear').onclick = () => { files.forEach(f => URL.revokeObjectURL(f.url)); files = []; build(); };
+const JSPDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+function loadJsPdf(){
+  if(window.jspdf) return Promise.resolve(window.jspdf);
+  return new Promise((ok, ng) => { const sc = document.createElement('script'); sc.src = JSPDF; sc.onload = () => ok(window.jspdf); sc.onerror = () => ng(new Error('jspdf')); document.head.appendChild(sc); });
+}
+$('pdf').onclick = async () => {
+  $('msg').textContent = 'PDFを作っています…'; $('pdf').disabled = true;
+  try {
+    const { jsPDF } = await loadJsPdf();
+    const doc = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait', compress:true });
+    const imgs = Array.from(document.querySelectorAll('.slot img'));
+    await Promise.all(imgs.map(i => i.decode ? i.decode().catch(() => null) : null));
+    const per = COLS * ROWS, pages = Math.ceil(files.length / per);
+    for(let p = 0; p < pages; p++){
+      if(p) doc.addPage('a4', 'portrait');
+      for(let i = 0; i < per; i++){
+        const k = p * per + i; if(k >= files.length) break;
+        const img = imgs[k];
+        doc.addImage(img, 'PNG', LEFT + (i % COLS) * CW, TOP + Math.floor(i / COLS) * CH, CW, CH, undefined, 'FAST');
+      }
+      doc.setDrawColor(138); doc.setLineWidth(0.2);
+      for(let c = 0; c <= COLS; c++){ const x = LEFT + c * CW; doc.line(x, TOP - 7, x, TOP - 2); doc.line(x, TOP + ROWS * CH + 2, x, TOP + ROWS * CH + 7); }
+      for(let r = 0; r <= ROWS; r++){ const y = TOP + r * CH; doc.line(LEFT - 7, y, LEFT - 2, y); doc.line(LEFT + COLS * CW + 2, y, LEFT + COLS * CW + 7, y); }
+    }
+    doc.save('meishi-print.pdf');
+    $('msg').textContent = 'PDFを保存したよ。印刷できるパソコンで、倍率100%で印刷してね。';
+  } catch(err){ $('msg').textContent = 'PDFを作れませんでした（インターネットにつながっているか確認してね）。'; }
+  $('pdf').disabled = !files.length;
+};
 $('print').onclick = () => {
   const imgs = Array.from(document.querySelectorAll('.slot img'));
   Promise.all(imgs.map(i => i.decode ? i.decode().catch(() => null) : null)).then(() => window.print());
