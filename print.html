@@ -62,7 +62,7 @@ ol{margin:6px 0 0;padding-left:22px;line-height:1.9;font-weight:500}
   <div class="card">
    <h2>つかいかた</h2>
    <ol>
-    <li>下の「画像をえらぶ」で、集めた名刺のPNG画像をまとめて選びます（<b>Ctrl+A</b> で全部選べます）。</li>
+    <li>下の「画像をえらぶ」で、集めた名刺のPNG画像、または、ロイロノートから出したPDFをまとめて選びます（<b>Ctrl+A</b> で全部選べます）。PDFのときは、名刺の形のページだけが入ります（インターネットにつながっている必要があります）。</li>
     <li>下に、印刷される並びが出ます。画像の名前の順に、左上から並びます。</li>
     <li>「印刷する」を押し、印刷の画面で次のように設定します。
      <ul style="margin:4px 0 0;line-height:1.8">
@@ -79,9 +79,9 @@ ol{margin:6px 0 0;padding-left:22px;line-height:1.9;font-weight:500}
     <button id="pick" class="btn primary" type="button">🖼️ 画像をえらぶ</button>
     <button id="print" class="btn go" type="button" disabled>🖨️ 印刷する</button>
     <button id="clear" class="btn" type="button" disabled>ぜんぶ消す</button>
-    <span class="count" id="count"></span>
+    <span class="count" id="count"></span><span class="note" id="msg" style="margin:0"></span>
    </div>
-   <input id="file" type="file" accept="image/png,image/jpeg" multiple hidden>
+   <input id="file" type="file" accept="image/png,image/jpeg,application/pdf,.pdf" multiple hidden>
   </div>
  </div>
 
@@ -122,12 +122,49 @@ function build(){
   $('print').disabled = false; $('clear').disabled = false;
 }
 $('pick').onclick = () => $('file').click();
-$('file').addEventListener('change', e => {
-  const list = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type));
-  list.sort((a,b) => a.name.localeCompare(b.name, 'en', { numeric:true }));
-  files.forEach(f => URL.revokeObjectURL(f.url));
-  files = list.map(f => ({ name:f.name, url:URL.createObjectURL(f) }));
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFWORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+function loadPdfjs(){
+  if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  return new Promise((ok, ng) => {
+    const sc = document.createElement('script'); sc.src = PDFJS;
+    sc.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFWORKER; ok(window.pdfjsLib); };
+    sc.onerror = () => ng(new Error('pdfjs'));
+    document.head.appendChild(sc);
+  });
+}
+// PDFの各ページのうち、名刺の形（91:55）のものだけを、画像にして取り出す
+async function pdfToItems(file, label){
+  const lib = await loadPdfjs();
+  const doc = await lib.getDocument({ data: await file.arrayBuffer() }).promise;
+  const out = []; let skipped = 0;
+  for(let n = 1; n <= doc.numPages; n++){
+    const page = await doc.getPage(n); const v1 = page.getViewport({ scale:1 });
+    if(Math.abs(v1.width / v1.height - CW / CH) > 0.03){ skipped++; continue; }
+    const vp = page.getViewport({ scale: 1075 / v1.width });
+    const cv = document.createElement('canvas'); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+    await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+    out.push({ name: label + '_p' + String(n).padStart(3,'0'), url: URL.createObjectURL(blob) });
+  }
+  return { items: out, skipped };
+}
+$('file').addEventListener('change', async e => {
+  const list = Array.from(e.target.files || []);
   e.target.value = '';
+  list.sort((a,b) => a.name.localeCompare(b.name, 'ja', { numeric:true }));
+  $('msg').textContent = '読みこみ中…';
+  const items = []; let skipped = 0, failed = false;
+  for(const f of list){
+    if(/^image\//.test(f.type)) items.push({ name:f.name, url:URL.createObjectURL(f) });
+    else if(f.type === 'application/pdf' || /\.pdf$/i.test(f.name)){
+      try { const r = await pdfToItems(f, f.name); items.push(...r.items); skipped += r.skipped; }
+      catch(err){ failed = true; }
+    }
+  }
+  files.forEach(f => URL.revokeObjectURL(f.url));
+  files = items;
+  $('msg').textContent = (failed ? 'PDFを読みこめませんでした（インターネットにつながっているか確認してね）。' : '') + (skipped ? skipped + ' ページは、名刺の形ではないので入れませんでした。' : '');
   build();
 });
 $('clear').onclick = () => { files.forEach(f => URL.revokeObjectURL(f.url)); files = []; build(); };
