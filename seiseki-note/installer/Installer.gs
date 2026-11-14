@@ -68,11 +68,6 @@ function api_(method, path, body, token) {
   });
   var code = res.getResponseCode();
   var text = res.getContentText();
-  if (code >= 300) {
-    if (code === 403 && /Apps Script API/i.test(text)) {
-      throw new Error('Apps Script API がオフです。https://script.google.com/home/usersettings で「Google Apps Script API」をオンにしてから、もう一度実行してください。');
-    }
-    throw new Error('Apps Script API でエラー（' + code + '）: ' + text.slice(0, 500));
-  }
+  if (code >= 300) throw new Error('Apps Script API でエラー（' + code + '）: ' + text.slice(0, 1500));
   return JSON.parse(text || '{}');
 }
